@@ -1,0 +1,18 @@
+body{
+	background-color:#3366FF;
+} 
+
+#pongCanvas{
+	width: 400px;
+	height:400px;
+	padding-left: 0;
+	padding-right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	border: 1px solid #000000;
+}
+
+#enableJavaScriptText{
+	text-align: center;
+}

@@ -1,0 +1,1 @@
+A project for a class. Picked pong since its simple enough and lets me focus on learning javascript, html, css, ajax, essentially all the things I can eventually apply elsewhere.
