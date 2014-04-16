@@ -41,13 +41,13 @@ var CTX2D = null; // Holds the canvas 2d context for easy rendering
 //Player one controls (left side of screen)
 var keyUpPlayer1 = 0; // Placeholders for now.
 var keyDownPlayer1 = 0;
-var keyLeftPlayer1 = 0;
-var keyRightPlayer1 = 0;
+var keyLeftPlayer1 = 0; // --------------------- Currently not in use!
+var keyRightPlayer1 = 0; // --------------------- Currently not in use!
 //Player two controls (right side of screen)
 var keyUpPlayer2 = 0;
 var keyDownPlayer2 = 0;
-var keyLeftPlayer2 = 0;
-var keyRightPlayer2 = 0;
+var keyLeftPlayer2 = 0; // --------------------- Currently not in use!
+var keyRightPlayer2 = 0; // --------------------- Currently not in use!
 // End keyCode control defines
 
 // Wait until the page loads to start running stuff
@@ -61,7 +61,8 @@ $(document).ready(function()
 function countDown()
 {
 	var timeDisp = document.getElementById('tmdsp'); // Grabs the element from the DOM identified by the id 'tmdsp'. This is where the number that counts down is
-	timeDisp.innerHTML = timeDisp.innerHTML - 1; // Subtracts one from that number and puts it back on the webpage
+	if(timeDisp.innerHTML!=0) //This is to make sure that if the skip button is pressed it never reads 0
+		timeDisp.innerHTML = timeDisp.innerHTML - 1; // Subtracts one from that number and puts it back on the webpage
 	if(timeDisp.innerHTML != 0) // If the number still is not zero
 		setTimeout(function(){countDown()}, 1000); // Set this function to be called again in one second
 	else
@@ -79,9 +80,20 @@ function delayPong()
 	timeDisp.style = "text-align:center"; // Styles it so that the text is centered, same as before
 	timeDisp.id = 'tmdsp'; // Assigns it an id so that it can be referenced later
 	timeDisp.innerHTML = 5; // Set the ammount of time to delay for in seconds, displayed. Also the content of the last <H1>
+	var skipButton = document.createElement('button'); // Creates a <Button></Button> element
+	skipButton.setAttribute("type", "button"); // Sets the type attribute to button
+	skipButton.setAttribute("onClick", "zeroTime()"); // When the button is clicked it runs the function which sets the ammount of remaining time to zero
+	skipButton.innerHTML = "Continue"; // Sets the text in the button to say "continue"
+	skipButton.style = "display:block; margin-left: auto; margin-right: auto;"; // Set the style to center the button
 	placement.appendChild(messagePleaseEnjoy); // Appends the text message into the DOM (so its displayed)
 	placement.appendChild(timeDisp); // Appends the number that will count down into the DOM (so its diplayed)
+	placement.appendChild(skipButton); // Appends the continue button into the DOM (so its displayed)
 	setTimeout(function(){countDown()}, 1000); // Set the countdown function to be called in one second
+}
+
+function zeroTime()
+{
+	document.getElementById('tmdsp').innerHTML = 0; // This function just zeros the timer.
 }
 
 // This function just makes sure that everything from the welcome message is removed so that pong can be put in its place
@@ -115,11 +127,11 @@ function setupCanvas()
 
 function setupVars()
 {
-	canvasCTX = document.getElementById('pongCanvas');
-	widthCanvas = canvasCTX.width;
-	heightCanvas = canvasCTX.height;
-	CTX2D = canvasCTX.getContext("2d");
-	setupInitialPositions();
+	canvasCTX = document.getElementById('pongCanvas'); // Store the canvas context in a variable so we can just use it at will throughout the code
+	widthCanvas = canvasCTX.width; // Grab the width of the canvas, this will be used a lot
+	heightCanvas = canvasCTX.height; //Grab the height of the canvas, this will be used a lot
+	CTX2D = canvasCTX.getContext("2d"); // Grab the 2d context since that is what we will render into
+	setupInitialPositions(); //Setup the intial coords of everything
 	// prevTime = the time here so that the first delta time calculation is correct. We will leave delta time as zero at first so that
 	// nothing moves for the first run through the loop. It should not matter unless the client is experiencing absurd ammounts of lag.
 }
@@ -129,6 +141,10 @@ function setupInitialPositions()
 	xPosBall = .5; // This and the next line
 	yPosBall = .5; // are to start the ball in the middle
 	
+	yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+	xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
+	yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 }
 
 function renderPong()
@@ -142,22 +158,38 @@ function renderPong()
 	// Draw paddle 1
 	CTX2D.beginPath();
 	CTX2D.rect(xPosPad1*widthCanvas,yPosPad1*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
+	CTX2D.fill();
+	//CTX2D.fillStyle = "#f00"; (maybe not needed?)
+	
 	//FINISH THE RENDERING HERE IT IS NOT DONE STILL NEEDS THE FILL AND FILLSTYLE TYPE THINGS
 	// Draw paddle 2
 	CTX2D.beginPath();
 	CTX2D.rect(xPosPad2*widthCanvas,yPosPad2*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
+	CTX2D.fill();
 	//FINISH THE RENDERING HERE IT IS NOT DONE STILL NEEDS THE FILL AND FILLSTYLE TYPE THINGS
 }
 
 function detectCollision()
 {
-	
+	//First make sure the paddles are in bounds! This ensures collisions are calculated correctly
+	//Currently do not use xPos for paddles
+	if(yPosPad1 > 1)
+		yPosPad1 = 1;
+	else if(yPosPad2 < 0)
+		yPosPad2 = 0;
+	//Check the second paddle
+	if(yPosPad2 > 1)
+		yPosPad2  = 1;
+	else if(yPosPad2 < 0)
+		yPosPad2 = 0;
+	//This next part is not complete, lets get paddles working first!
+	//Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
 }
 
 // Detect keydowns and update vars.
 $(document).keydown(function(event)
 {
-	//var keyPressed = event.which(); // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't. Just a note.
+	var keyPressed = event.which(); // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't. Just a note.
 	//if(keyPressed == )
 });
 
