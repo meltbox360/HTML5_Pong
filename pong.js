@@ -132,8 +132,8 @@ function setupVars()
 	heightCanvas = canvasCTX.height; //Grab the height of the canvas, this will be used a lot
 	CTX2D = canvasCTX.getContext("2d"); // Grab the 2d context since that is what we will render into
 	setupInitialPositions(); //Setup the intial coords of everything
-	// prevTime = the time here so that the first delta time calculation is correct. We will leave delta time as zero at first so that
-	// nothing moves for the first run through the loop. It should not matter unless the client is experiencing absurd ammounts of lag.
+	prevTime = new Date().getTime(); // returns the number of milliseconds between midnight of January 1, 1970 - will be used later to calculate deltatime
+	deltaTime = 0; // So nothing moves through the first run through the loop
 }
 
 function setupInitialPositions()
@@ -145,6 +145,8 @@ function setupInitialPositions()
 	xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
 	yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+	
+	padOneYVeloc = .00001;
 }
 
 function renderPong()
@@ -171,25 +173,26 @@ function renderPong()
 
 function detectCollision()
 {
-	//First make sure the paddles are in bounds! This ensures collisions are calculated correctly
-	//Currently do not use xPos for paddles
-	if(yPosPad1 > 1)
-		yPosPad1 = 1;
+	// First make sure the paddles are in bounds! This ensures collisions are calculated correctly
+	if(yPosPad1 > (1-padHeight))
+		yPosPad1 = 1-padHeight;
+	else if(yPosPad1 < 0)
+		yPosPad1 = 0;
+	// XPOS IS CURRENTLY NOT CHECKED, MAKE SURE TO CHECK WHEN IMPLEMENTING
+	// Check the second paddle
+	if(yPosPad2 > (1-padHeight))
+		yPosPad2  = 1-padHeight;
 	else if(yPosPad2 < 0)
 		yPosPad2 = 0;
-	//Check the second paddle
-	if(yPosPad2 > 1)
-		yPosPad2  = 1;
-	else if(yPosPad2 < 0)
-		yPosPad2 = 0;
-	//This next part is not complete, lets get paddles working first!
-	//Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
+	// XPOS IS CURRENTLY NOT CHECKED, MAKE SURE TO CHECK WHEN IMPLEMENTING
+	// This next part is not complete, lets get paddles working first!
+	// Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
 }
 
 // Detect keydowns and update vars.
 $(document).keydown(function(event)
 {
-	var keyPressed = event.which(); // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't - Just a note
+	var keyPressed = event.which; // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't - Just a note
 	// Check for player 1 controls
 	if(keyPressed == keyUpPlayer1)
 		padOneUp = true;
@@ -208,12 +211,13 @@ $(document).keydown(function(event)
 		padTwoLeft = true;
 	if(keyPressed == keyRightPlayer2)
 		padTwoRight = true;
+	// alert(padOneUp); //Demonstrate it workksss
 });
 
 // Detect keydowns and update vars.
 $(document).keyup(function(event)
 {
-	var keyReleased = event.which(); // This should always have the key that is released, may have to or with event.keyCode but jquery claims you don't - Just a note
+	var keyReleased = event.which; // This should always have the key that is released, may have to or with event.keyCode but jquery claims you don't - Just a note
 	// Check for player 1 controls
 	if(keyReleased == keyUpPlayer1)
 		padOneUp = false;
@@ -237,44 +241,63 @@ $(document).keyup(function(event)
 function positionUpdate()
 {
 	// Update Ball Position
-	xPosBall += xVelocBall*widthCanvas;
-	yPosBall += yVelocBall*heighCanvas;
-	// Update speed of ball.
+	xPosBall += xVelocBall*widthCanvas*deltaTime;
+	yPosBall += yVelocBall*heightCanvas*deltaTime;
+	// Update speed of ball. - ???
 	// yVelocBall;
 	// xVelocBall;
 	
 	// Update Paddle Position
-	/*
-	if(padOneUp && (true))
+	// Update first paddle position
+	if(padOneUp)
 	{
-		yPosPad1 -= padOneVeloc*heightCanvas; // In a canvas (0,0) is top left
+		yPosPad1 -= padOneYVeloc*heightCanvas*deltaTime; // In a canvas (0,0) is top left
 	}
-	if(padOneDown && (yPosPad1 < ()))
+	if(padOneDown)
 	{
-		yPosPad1 += padOneVeloc*heightCanvas; // Remember top left is (0,0)
+		yPosPad1 += padOneYVeloc*heightCanvas*deltaTime; // Remember top left is (0,0)
 	}
-	if(padTwoUp && (true))
+	// Following two NOT IN USE at this time
+	if(padOneRight)
 	{
-		yPosPad2 -= padTwoVeloc*heightCanvas;
 	}
-	if(padTwoDown && (yPosPad2 < ()))
+	if(padOneLeft)
 	{
-		yPosPad2 += padTwoVeloc*heightCanvas;
-	}*/
-	// Detect collisions and update ball position appropriately.
-	detectCollision();
-	// Update paddle position based on user input.
+	}
+	// Update second player's paddle position
+	if(padTwoUp)
+	{
+		yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
+	}
+	if(padTwoDown)
+	{
+		yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+	}
+	// Folowing two NOT IN USE at this time
+	if(padTwoRight)
+	{
+	}
+	if(padTwoLeft)
+	{
+	}
 }
 
 function framePacing()
 {
 	// Perhaps do the deltaTime calculations here as well, seems like a good place, could help determine how much to sleep as well as how much things should move
-	setTimeout(function(){mainPong()}, 20); // Need some sort of thing like this otherwise the webpage freezes as javascript running takes prescedence over other things.
+	deltaTime = new Date().getTime()-prevTime;
+	prevTime += deltaTime;
+	setTimeout(function(){mainPong()}, 30); // Need some sort of thing like this otherwise the webpage freezes as javascript running takes prescedence over other things.
 }
 
 function mainPong()
 {
+	//Render everything to the screen
 	renderPong();
+	// Update positions of things just based off velocity
 	positionUpdate();
+	// Detect collisions and update positions and velocities based off collisions
+	detectCollision();
+	// Make sure that timing is correct and that the page remains responsive with 'sleeps'
 	framePacing();
 }
