@@ -32,6 +32,9 @@ var padTwoLeft = false; // Is the left key for pad two being pressed? ----------
 var deltaTime = 0; // Change in time from last loop to current loop, so everything moves same speed on any speed computer --------------------- Currently not in use!
 var prevTime = 0; // Previous time, holder to calculate the delta time next time around --------------------- Currently not in use!
 
+var scorePlayer1 = 0; // Score of player 1
+var scorePlayer2 = 0; // Score of player 2
+
 // The following variables should never be modified once assigned
 // I'll figure out how javascript can do that at a later time (No cross browser way! Woooo javascript....)
 var canvasCTX = null; // Holds the canvas context for easy reference/modification
@@ -39,15 +42,15 @@ var CTX2D = null; // Holds the canvas 2d context for easy rendering
 
 // Below are the defined keyCodes for various controls. These should be treated essentially as constants.
 //Player one controls (left side of screen)
-var keyUpPlayer1 = 0; // Placeholders for now.
-var keyDownPlayer1 = 0;
-var keyLeftPlayer1 = 0; // --------------------- Currently not in use!
-var keyRightPlayer1 = 0; // --------------------- Currently not in use!
+var keyUpPlayer1 = 87; // 'w' key
+var keyDownPlayer1 = 83; // 's' key
+var keyLeftPlayer1 = 65; // 'a' key
+var keyRightPlayer1 = 68; // 'd' key
 //Player two controls (right side of screen)
-var keyUpPlayer2 = 0;
-var keyDownPlayer2 = 0;
-var keyLeftPlayer2 = 0; // --------------------- Currently not in use!
-var keyRightPlayer2 = 0; // --------------------- Currently not in use!
+var keyUpPlayer2 = 38; // up key
+var keyDownPlayer2 = 40; // down key
+var keyLeftPlayer2 = 37; // left key
+var keyRightPlayer2 = 39; // right key
 // End keyCode control defines
 
 // Wait until the page loads to start running stuff
@@ -99,17 +102,14 @@ function zeroTime()
 // This function just makes sure that everything from the welcome message is removed so that pong can be put in its place
 function cleanup404()
 {
-	var placement = document.getElementById('pongPlacement');
-//	var things = document.createElement('h1');
-//	things.innerHTML = 'singing';
-//	placement.appendChild(things);
-	while(placement.hasChildNodes())
+	var placement = document.getElementById('pongPlacement'); // Grabs the id of the pongPlacement element in which everything was placed
+	while(placement.hasChildNodes()) // Run through this loop until pongPlacement has no child elements
 	{
-		placement.removeChild(placement.firstChild);
+		placement.removeChild(placement.firstChild); // Remove the first child element from within pongPlacement
 	}
-	setupCanvas();
-	setupVars();
-	mainPong();
+	setupCanvas(); // Creates a canvas with an id and place it in the DOM
+	setupVars(); // Sets up all the initial positions for things and any variables pong may need to start
+	mainPong(); // Starts the main pong "loop"
 }
 
 // This function simply creates a canvas with an id and then gives it an id and places it in the DOM
@@ -189,14 +189,49 @@ function detectCollision()
 // Detect keydowns and update vars.
 $(document).keydown(function(event)
 {
-	var keyPressed = event.which(); // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't. Just a note.
-	//if(keyPressed == )
+	var keyPressed = event.which(); // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't - Just a note
+	// Check for player 1 controls
+	if(keyPressed == keyUpPlayer1)
+		padOneUp = true;
+	if(keyPressed == keyDownPlayer1)
+		padOneDown = true;
+	if(keyPressed == keyLeftPlayer1)
+		padOneLeft = true;
+	if(keyPressed == keyRightPlayer1)
+		padOneRight = true;
+	// Check for player 2 controls
+	if(keyPressed == keyUpPlayer2)
+		padTwoUp = true;
+	if(keyPressed == keyDownPlayer2)
+		padTwoDown = true;
+	if(keyPressed == keyLeftPlayer2)
+		padTwoLeft = true;
+	if(keyPressed == keyRightPlayer2)
+		padTwoRight = true;
 });
 
 // Detect keydowns and update vars.
 $(document).keyup(function(event)
 {
-	
+	var keyReleased = event.which(); // This should always have the key that is released, may have to or with event.keyCode but jquery claims you don't - Just a note
+	// Check for player 1 controls
+	if(keyReleased == keyUpPlayer1)
+		padOneUp = false;
+	if(keyReleased == keyDownPlayer1)
+		padOneDown = false;
+	if(keyReleased == keyLeftPlayer1)
+		padOneLeft = false;
+	if(keyReleased == keyRightPlayer1)
+		padOneRight = false;
+	// Check for player 2 controls
+	if(keyReleased == keyUpPlayer2)
+		padTwoUp = false;
+	if(keyReleased == keyDownPlayer2)
+		padTwoDown = false;
+	if(keyReleased == keyLeftPlayer2)
+		padTwoLeft = false;
+	if(keyReleased == keyRightPlayer2)
+		padTwoRight = false;
 });
 
 function positionUpdate()
