@@ -147,7 +147,10 @@ function setupInitialPositions()
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 	
 	padOneYVeloc = .00001;
+	padOneXVeloc = .00001;
+	
 	padTwoYVeloc = .00001;
+	padTwoXveloc = .00001;
 }
 
 function renderPong()
@@ -179,13 +182,21 @@ function detectCollision()
 		yPosPad1 = 1-padHeight;
 	else if(yPosPad1 < 0)
 		yPosPad1 = 0;
-	// XPOS IS CURRENTLY NOT CHECKED, MAKE SURE TO CHECK WHEN IMPLEMENTING
+	// XPOS Check
+	if(xPosPad1 < 0)
+		xPosPad1 = 0;
+	else if(xPosPad1 > .35)
+		xPosPad1 = .35;
 	// Check the second paddle
 	if(yPosPad2 > (1-padHeight))
 		yPosPad2  = 1-padHeight;
 	else if(yPosPad2 < 0)
 		yPosPad2 = 0;
-	// XPOS IS CURRENTLY NOT CHECKED, MAKE SURE TO CHECK WHEN IMPLEMENTING
+	// XPOS Check
+	if(xPosPad1 > 1-padWidth)
+		xPosPad1 = 1-padWidth;
+	else if(xPosPad1 < 1-.35-padWidth)
+		xPosPad1 = 1-.35-padWidth;
 	// This next part is not complete, lets get paddles working first!
 	// Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
 }
@@ -261,9 +272,11 @@ function positionUpdate()
 	// Following two NOT IN USE at this time
 	if(padOneRight)
 	{
+		xPosPad1 += padOneXVeloc*widthCanvas*deltaTime; // To the right is positive
 	}
 	if(padOneLeft)
 	{
+		xPosPad1 -= padOneXVeloc*widthCanvas*deltaTime; // To the left if negative
 	}
 	// Update second player's paddle position
 	if(padTwoUp)
@@ -277,6 +290,7 @@ function positionUpdate()
 	// Folowing two NOT IN USE at this time
 	if(padTwoRight)
 	{
+		
 	}
 	if(padTwoLeft)
 	{
