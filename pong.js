@@ -2,8 +2,8 @@
 // Lets see what I can get done.
 
 //Set up a few global variables to keep track of stuff. Or more than a few....
-var heightCanvas = 400; // Height of the canvas in pixels
-var widthCanvas = 400; // Width of the canvas in pixels
+var heightCanvas = 400; // Height of the canvas in pixels - really could be set to zero, its read in later
+var widthCanvas = 400; // Width of the canvas in pixels - really could be set to zero, its read in later
 // Between this comment and the 'end' comment all vars should always be 0>=x>=1 since they will later be multiplied by the width or height of the canvas
 var xPosBall = 0; // They x-position of the ball as a fraction of the width of the canvas
 var yPosBall = 0; // The y-position of the ball as a fraction of the height of the canvas
@@ -147,6 +147,7 @@ function setupInitialPositions()
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 	
 	padOneYVeloc = .00001;
+	padTwoYVeloc = .00001;
 }
 
 function renderPong()
