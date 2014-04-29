@@ -83,16 +83,16 @@ function delayPong()
 	var placement = document.getElementById('pongPlacement'); // This grabs the div where pong will later appear
 	var messagePleaseEnjoy = document.createElement('H1'); // Creates a <H1></H1> element
 	messagePleaseEnjoy.innerHTML = "Please Enjoy A Game of Pong In"; // Puts the text in the element
-	messagePleaseEnjoy.style = "text-align:center"; // Styles it so that the text is centered (css in html style="")
+	messagePleaseEnjoy.setAttribute("style","text-align:center"); // Styles it so that the text is centered (css in html style="")
 	var timeDisp = document.createElement('H1'); // Creates another <H1></H1> element
-	timeDisp.style = "text-align:center"; // Styles it so that the text is centered, same as before
+	timeDisp.setAttribute("style","text-align:center"); // Styles it so that the text is centered, same as before
 	timeDisp.id = 'tmdsp'; // Assigns it an id so that it can be referenced later
 	timeDisp.innerHTML = 5; // Set the ammount of time to delay for in seconds, displayed. Also the content of the last <H1>
 	var skipButton = document.createElement('button'); // Creates a <Button></Button> element
 	skipButton.setAttribute("type", "button"); // Sets the type attribute to button
 	skipButton.setAttribute("onClick", "zeroTime()"); // When the button is clicked it runs the function which sets the ammount of remaining time to zero
 	skipButton.innerHTML = "Continue"; // Sets the text in the button to say "continue"
-	skipButton.style = "display:block; margin-left: auto; margin-right: auto;"; // Set the style to center the button
+	skipButton.setAttribute("style", "display:block; margin-left: auto; margin-right: auto;"); // Set the style to center the button
 	placement.appendChild(messagePleaseEnjoy); // Appends the text message into the DOM (so its displayed)
 	placement.appendChild(timeDisp); // Appends the number that will count down into the DOM (so its diplayed)
 	placement.appendChild(skipButton); // Appends the continue button into the DOM (so its displayed)
@@ -133,6 +133,8 @@ function setupCanvas()
 function setupVars()
 {
 	canvasCTX = document.getElementById('pongCanvas'); // Store the canvas context in a variable so we can just use it at will throughout the code
+	canvasCTX.width = $("#pongCanvas").width(); // Actually scale the canvas to the proper size. Otherwise canvas is low res and css just stretches it
+	canvasCTX.height = $("#pongCanvas").height(); // Makes sure canvas actually scales and is not stretched
 	widthCanvas = canvasCTX.width; // Grab the width of the canvas, this will be used a lot
 	heightCanvas = canvasCTX.height; //Grab the height of the canvas, this will be used a lot
 	CTX2D = canvasCTX.getContext("2d"); // Grab the 2d context since that is what we will render into
@@ -262,7 +264,7 @@ $(document).keydown(function(event)
 		padTwoRight = true;
 	// Bring up the menu (esc)
 	if(keyPressed == 27)
-		menuUp = true;
+		menuUp = !menuUp; //CHANGE THIS TO BE TRUE LATER MENU CANT BE EXITED LIKE THIS
 });
 
 // Detect keydowns and update vars.
@@ -291,7 +293,12 @@ $(document).keyup(function(event)
 
 function loadMenu()
 {
-	
+	var menuDiv = document.createElement("div");
+	menuDiv.id = "menuDiv"
+	var styleString = "position:absolute; width:" + widthCanvas + "px; height:" + heightCanvas + "px; background-color:black; opacity:1.0; left:0; right:0; z-index:1; margin-left:auto; margin-right:auto;"
+	menuDiv.setAttribute("style",styleString);
+	document.getElementById('pongPlacement').appendChild(menuDiv);
+	waitForMenuDown();
 }
 
 function waitForMenuDown()
@@ -299,18 +306,24 @@ function waitForMenuDown()
 	if(menuUp == true)
 		setTimeout(function(){waitForMenuDown()}, 100);
 	else
+	{
 		unloadMenu();
+		mainPong();
+	}
 }
 
 function unloadMenu()
 {
 	// Use a loop to remove all the child elements of that div and then remove the div itself. Or just remove the div?
+	/*
 	var placement = document.getElementById('menuDiv'); // Grabs the id of the menuDiv
 	while(placement.hasChildNodes()) // Run through this loop until menuDiv has no child elements
 	{
 		placement.removeChild(placement.firstChild); // Remove the first child element from within
 	}
 	document.getElementById('pongPlacement').removeChild(document.getElementById('menuDiv')); // Remove menuDiv itself
+	*/
+	$("#menuDiv").remove();
 }
 
 function positionUpdate()
