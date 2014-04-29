@@ -15,8 +15,8 @@ var yPosPad2 = 0; // A fraction of the height of the canvas that specifies the y
 var xPosPad2 = 0; // A fraction of the width of the canvas that specifies the x coordinate of the second paddle
 var padHeight = (1/7); // A fraction of the hight of the canvas which the pads are
 var padWidth = (1/100); // A fraction of the width of the canvas which the pads are
-var padOneYVeloc = 0; // The y-velocity of pad one as a fraction of the height of the canvas
-var padOneXVeloc = 0; // The x-velocity of pad one as a fraction of the width of the canvas --------------------- Currently not in use!
+var padOneYVeloc = 0.0; // The y-velocity of pad one as a fraction of the height of the canvas
+var padOneXVeloc = 0.0; // The x-velocity of pad one as a fraction of the width of the canvas --------------------- Currently not in use!
 var padTwoYVeloc = 0; // The y-velocity of pad two as a fraction of the height of the canvas
 var padTwoXVeloc = 0; // The x-velocity of pad two as a fraction of the width of the canvas --------------------- Currently not in use!
 // end
@@ -147,10 +147,10 @@ function setupInitialPositions()
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 	
 	padOneYVeloc = .00001;
-	padOneXVeloc = .00001;
+	padOneXVeloc = .000002;
 	
 	padTwoYVeloc = .00001;
-	padTwoXveloc = .00001;
+	padTwoXVeloc = .000002;
 }
 
 function renderPong()
@@ -185,18 +185,22 @@ function detectCollision()
 	// XPOS Check
 	if(xPosPad1 < 0)
 		xPosPad1 = 0;
-	else if(xPosPad1 > .35)
-		xPosPad1 = .35;
+	else if(xPosPad1 > .25)
+		xPosPad1 = .25;
 	// Check the second paddle
 	if(yPosPad2 > (1-padHeight))
 		yPosPad2  = 1-padHeight;
 	else if(yPosPad2 < 0)
 		yPosPad2 = 0;
 	// XPOS Check
-	if(xPosPad1 > 1-padWidth)
-		xPosPad1 = 1-padWidth;
-	else if(xPosPad1 < 1-.35-padWidth)
-		xPosPad1 = 1-.35-padWidth;
+	if(xPosPad2 > (1-padWidth))
+	{
+		xPosPad2 = 1-padWidth;
+	}
+	else if(xPosPad2 < (1-.25-padWidth))
+	{
+		xPosPad2 = 1-.25-padWidth;
+	}
 	// This next part is not complete, lets get paddles working first!
 	// Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
 }
@@ -269,7 +273,7 @@ function positionUpdate()
 	{
 		yPosPad1 += padOneYVeloc*heightCanvas*deltaTime; // Remember top left is (0,0)
 	}
-	// Following two NOT IN USE at this time
+	// Update xpos
 	if(padOneRight)
 	{
 		xPosPad1 += padOneXVeloc*widthCanvas*deltaTime; // To the right is positive
@@ -287,13 +291,14 @@ function positionUpdate()
 	{
 		yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
 	}
-	// Folowing two NOT IN USE at this time
+	// Update xpos
 	if(padTwoRight)
 	{
-		
+		xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
 	}
 	if(padTwoLeft)
 	{
+		xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
 	}
 }
 
@@ -302,7 +307,7 @@ function framePacing()
 	// Perhaps do the deltaTime calculations here as well, seems like a good place, could help determine how much to sleep as well as how much things should move
 	deltaTime = new Date().getTime()-prevTime;
 	prevTime += deltaTime;
-	setTimeout(function(){mainPong()}, 30); // Need some sort of thing like this otherwise the webpage freezes as javascript running takes prescedence over other things.
+	setTimeout(function(){mainPong()}, 5); // Need some sort of thing like this otherwise the webpage freezes as javascript running takes prescedence over other things.
 }
 
 function mainPong()
