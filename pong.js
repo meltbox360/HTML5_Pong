@@ -6,7 +6,9 @@ var heightCanvas = 400; // Height of the canvas in pixels - really could be set 
 var widthCanvas = 400; // Width of the canvas in pixels - really could be set to zero, its read in later
 // Between this comment and the 'end' comment all vars should always be 0>=x>=1 since they will later be multiplied by the width or height of the canvas
 var xPosBall = 0; // They x-position of the ball as a fraction of the width of the canvas
+var lastXPosBall = 0; // Stores the last x pos for detecting collisions
 var yPosBall = 0; // The y-position of the ball as a fraction of the height of the canvas
+var lastYPosBall = 0; // Stores the last y pos for detecting collisions
 var yVelocBall = 0; // The y-velocity of the ball as a fraction of the height of the canvas
 var xVelocBall = 0; // The x-velocity of the ball as a fraction of the width of the canvas
 var yPosPad1 = 0; // A fraction of the height of the canvas that specifies the y coordinate of the first paddle
@@ -15,11 +17,14 @@ var yPosPad2 = 0; // A fraction of the height of the canvas that specifies the y
 var xPosPad2 = 0; // A fraction of the width of the canvas that specifies the x coordinate of the second paddle
 var padHeight = (1/7); // A fraction of the hight of the canvas which the pads are
 var padWidth = (1/100); // A fraction of the width of the canvas which the pads are
+var widthCenterLine = 0; // Width of centerline
 var padOneYVeloc = 0.0; // The y-velocity of pad one as a fraction of the height of the canvas
 var padOneXVeloc = 0.0; // The x-velocity of pad one as a fraction of the width of the canvas --------------------- Currently not in use!
 var padTwoYVeloc = 0; // The y-velocity of pad two as a fraction of the height of the canvas
 var padTwoXVeloc = 0; // The x-velocity of pad two as a fraction of the width of the canvas --------------------- Currently not in use!
 // end
+
+var menuUp = false; // Is the menu up?
 
 var padOneUp = false; // Is the up key for pad one being pressed?
 var padOneDown = false; // Is the down key for pad one being pressed?
@@ -138,14 +143,24 @@ function setupVars()
 
 function setupInitialPositions()
 {
-	xPosBall = .5; // This and the next line
-	yPosBall = .5; // are to start the ball in the middle
+	//SIZES
+	padHeight = (1/7);
+	padWidth = (1/100);
+	
+	ballRadius = (1/130);
+	
+	widthCenterLine = (1/200);
+	
+	//POSITIONS
+	xPosBall = .5 - ballRadius*.5; // This and the next line
+	yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
 	
 	yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
 	xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
 	yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 	
+	//VELOCITIES
 	padOneYVeloc = .00001;
 	padOneXVeloc = .000002;
 	
@@ -155,24 +170,42 @@ function setupInitialPositions()
 
 function renderPong()
 {
+	//Clear the background
 	CTX2D.clearRect(0,0,widthCanvas,heightCanvas);
+	
+	//Make background white so it is different from page background
+	CTX2D.beginPath();
+	CTX2D.rect(0,0,widthCanvas,heightCanvas);
+	CTX2D.fillStyle = 'blue';
+	CTX2D.fill();
+	
 	// Draw the ball.
 	CTX2D.beginPath();
-	CTX2D.arc(xPosBall*widthCanvas,yPosBall*heightCanvas,(1/100)*widthCanvas,0,2*Math.PI);
+	CTX2D.arc(xPosBall*widthCanvas,yPosBall*heightCanvas,ballRadius*widthCanvas,0,2*Math.PI);
 	CTX2D.fillStyle = 'black';
 	CTX2D.fill();
+	
 	// Draw paddle 1
 	CTX2D.beginPath();
 	CTX2D.rect(xPosPad1*widthCanvas,yPosPad1*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
 	CTX2D.fill();
-	//CTX2D.fillStyle = "#f00"; (maybe not needed?)
 	
-	//FINISH THE RENDERING HERE IT IS NOT DONE STILL NEEDS THE FILL AND FILLSTYLE TYPE THINGS
 	// Draw paddle 2
-	CTX2D.beginPath();
+	CTX2D.beginPath(); // This seems to be not necessary, yay optimization later?
 	CTX2D.rect(xPosPad2*widthCanvas,yPosPad2*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
 	CTX2D.fill();
-	//FINISH THE RENDERING HERE IT IS NOT DONE STILL NEEDS THE FILL AND FILLSTYLE TYPE THINGS
+	
+	//Centerline drawn through a rect
+	CTX2D.beginPath();
+	CTX2D.rect((.5-widthCenterLine)*widthCanvas,0,.5*widthCenterLine*widthCanvas,heightCanvas);
+	CTX2D.fill();
+	
+	
+	//FINISH THE RENDERING HERE (scores, centerline, uhhhh perhaps menu?)
+	
+	//CTX2D.beginPath();
+	//CTX2D.font = "30px Arial";
+	//CTX2D.fillText("Hello World",10,50);
 }
 
 function detectCollision()
@@ -201,8 +234,8 @@ function detectCollision()
 	{
 		xPosPad2 = 1-.25-padWidth;
 	}
-	// This next part is not complete, lets get paddles working first!
-	// Now we do a looped check where we keep checking if the ball is out of bounds and... hmm need to think about this. 
+	//Check if ball bounced off a paddle
+	
 }
 
 // Detect keydowns and update vars.
@@ -227,7 +260,9 @@ $(document).keydown(function(event)
 		padTwoLeft = true;
 	if(keyPressed == keyRightPlayer2)
 		padTwoRight = true;
-	// alert(padOneUp); //Demonstrate it workksss
+	// Bring up the menu (esc)
+	if(keyPressed == 27)
+		menuUp = true;
 });
 
 // Detect keydowns and update vars.
@@ -253,6 +288,30 @@ $(document).keyup(function(event)
 	if(keyReleased == keyRightPlayer2)
 		padTwoRight = false;
 });
+
+function loadMenu()
+{
+	
+}
+
+function waitForMenuDown()
+{
+	if(menuUp == true)
+		setTimeout(function(){waitForMenuDown()}, 100);
+	else
+		unloadMenu();
+}
+
+function unloadMenu()
+{
+	// Use a loop to remove all the child elements of that div and then remove the div itself. Or just remove the div?
+	var placement = document.getElementById('menuDiv'); // Grabs the id of the menuDiv
+	while(placement.hasChildNodes()) // Run through this loop until menuDiv has no child elements
+	{
+		placement.removeChild(placement.firstChild); // Remove the first child element from within
+	}
+	document.getElementById('pongPlacement').removeChild(document.getElementById('menuDiv')); // Remove menuDiv itself
+}
 
 function positionUpdate()
 {
@@ -312,12 +371,19 @@ function framePacing()
 
 function mainPong()
 {
-	//Render everything to the screen
-	renderPong();
-	// Update positions of things just based off velocity
-	positionUpdate();
-	// Detect collisions and update positions and velocities based off collisions
-	detectCollision();
-	// Make sure that timing is correct and that the page remains responsive with 'sleeps'
-	framePacing();
+	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
+	{
+		loadMenu();
+	}
+	else // Go to the actual game loop
+	{
+		// Render everything to the screen
+		renderPong();
+		// Update positions of things just based off velocity
+		positionUpdate();
+		// Detect collisions and update positions and velocities based off collisions
+		detectCollision();
+		// Make sure that timing is correct and that the page remains responsive with 'sleeps'
+		framePacing();
+	}
 }
