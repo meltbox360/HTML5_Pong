@@ -393,6 +393,7 @@ function loadMainMenu()
 	waitForMenuDown();
 }
 
+// Code realating to single player menu
 function loadSinglePlayerMenu()
 {
 	// Setup title
@@ -406,10 +407,55 @@ function loadSinglePlayerMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Enter number of points
+	
+	// Enter difficulty
+	
 	// Start game
+	var startGameButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Start Game";
+	tempHolder.id = "startGameButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	startGameButton.appendChild(tempHolder);
+	menuDiv.appendChild(startGameButton);
 	// Main menu
+	var mainMenuButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Main Menu";
+	tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	mainMenuButton.appendChild(tempHolder);
+	menuDiv.appendChild(mainMenuButton);
+	// Button hover handlers
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
+	});
+	// Button click handlers
+	// Main menu button
+	$("#mainMenuButton").click(function()
+	{
+		emptyMenu();
+		loadMainMenu();
+	});
+	// Start game button
+	$("#startGameButton").click(function()
+	{
+		// SETUP THE GAME FIRST!!!!
+		menuUp = false;
+	});
 }
 
+// Code realating to player vs player menu (local)
 function loadPlayerVsPlayerLocalMenu()
 {
 	// Setup title
@@ -423,10 +469,53 @@ function loadPlayerVsPlayerLocalMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Enter number of points
+	
 	// Start game
+	var startGameButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Start Game";
+	tempHolder.id = "startGameButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	startGameButton.appendChild(tempHolder);
+	menuDiv.appendChild(startGameButton);
 	// Main menu
+	var mainMenuButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Main Menu";
+	tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	mainMenuButton.appendChild(tempHolder);
+	menuDiv.appendChild(mainMenuButton);
+	// Button hover handlers
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
+	});
+	// Button click handlers
+	// Main menu button
+	$("#mainMenuButton").click(function()
+	{
+		emptyMenu();
+		loadMainMenu();
+	});
+	// Start game button
+	$("#startGameButton").click(function()
+	{
+		// SETUP THE GAME FIRST!!!!
+		menuUp = false;
+	});
 }
 
+// ONLINE MENU NOT FULLY IMPLEMENTED!!!!!!
 function loadPlayerVsPlayerOnlineMenu()
 {
 	// Setup title
@@ -439,11 +528,17 @@ function loadPlayerVsPlayerOnlineMenu()
 	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
+	// Some sort of game browser???? This needs to be thought out
 	// Enter number of points
 	// Start game
 	// Main menu
+	// Button click handlers
+	alert("Online play is not yet implemented. Sorry!"); // This page is a stub to build off later
+	emptyMenu();
+	loadMainMenu();
 }
 
+// Code related to settings menu
 function loadSettingsMenu()
 {
 	// Setup title
@@ -457,7 +552,88 @@ function loadSettingsMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Input resolution
+	var resolutionInput = document.createElement("div");
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Width:")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("type", "number");
+	tempHolder.setAttribute("id", "widthInput");
+	tempHolder.setAttribute("min", "400");
+	tempHolder.setAttribute("max", "2000");
+	tempHolder.setAttribute("value", widthCanvas);
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createTextNode("  Height:")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("type", "number");
+	tempHolder.setAttribute("id", "heightInput");
+	tempHolder.setAttribute("min", "400");
+	tempHolder.setAttribute("max", "2000");
+	tempHolder.setAttribute("value", heightCanvas);
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
+	// Apply
+	var applyButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Apply";
+	tempHolder.id = "applyButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	applyButton.appendChild(tempHolder);
+	menuDiv.appendChild(applyButton);
 	// Main menu
+	var mainMenuButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Main Menu";
+	tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	mainMenuButton.appendChild(tempHolder);
+	menuDiv.appendChild(mainMenuButton);
+	// Button hover handlers
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
+	});
+	// Button click handlers
+	// Main menu button
+	$("#mainMenuButton").click(function()
+	{
+		emptyMenu();
+		loadMainMenu();
+	});
+	// Apply button
+	$("#applyButton").click(function()
+	{
+		// Set everything here and then reload menu entirely
+		var inputHeight = parseInt(document.getElementById('heightInput').value, 10);
+		if((inputHeight >= 400)&&(inputHeight <= 2000))
+		{
+			heightCanvas = inputHeight;
+			$("#pongCanvas").attr("height", inputHeight);
+			$("#pongCanvas").css("height", inputHeight);
+		}
+		var inputWidth = parseInt(document.getElementById('widthInput').value, 10);
+		if((inputWidth >= 400)&&(inputWidth <= 2000))
+		{
+			widthCanvas = inputWidth;
+			$("#pongCanvas").attr("width", inputWidth);
+			$("#pongCanvas").css("width", inputWidth);
+		}
+		// Now reload the menu entirely!
+		unloadMenu();
+		loadMenuBackground();
+		loadMainMenu();
+	});
 }
 
 function waitForMenuDown()
