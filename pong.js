@@ -44,6 +44,7 @@ var scorePlayer2 = 0; // Score of player 2
 // I'll figure out how javascript can do that at a later time (No cross browser way! Woooo javascript....)
 var canvasCTX = null; // Holds the canvas context for easy reference/modification
 var CTX2D = null; // Holds the canvas 2d context for easy rendering
+var menuDiv = null; // Hold the div that holds the menu, probably null or meaningless unless the menu is up
 
 // Below are the defined keyCodes for various controls. These should be treated essentially as constants.
 //Player one controls (left side of screen)
@@ -264,7 +265,7 @@ $(document).keydown(function(event)
 		padTwoRight = true;
 	// Bring up the menu (esc)
 	if(keyPressed == 27)
-		menuUp = !menuUp; //CHANGE THIS TO BE TRUE LATER MENU CANT BE EXITED LIKE THIS
+		menuUp = !menuUp; //CHANGE THIS TO BE TRUE LATER MENU CANT BE EXITED LIKE THIS also player should start with a menu up for game mode selection and the such
 });
 
 // Detect keydowns and update vars.
@@ -291,14 +292,174 @@ $(document).keyup(function(event)
 		padTwoRight = false;
 });
 
-function loadMenu()
+function loadMenuBackground()
 {
-	var menuDiv = document.createElement("div");
+	//Load in the background and everything
+	menuDiv = document.createElement("div");
 	menuDiv.id = "menuDiv"
-	var styleString = "position:absolute; width:" + widthCanvas + "px; height:" + heightCanvas + "px; background-color:black; opacity:1.0; left:0; right:0; z-index:1; margin-left:auto; margin-right:auto;"
+	var styleString = "position:absolute; width:" + widthCanvas + "px; height:" + heightCanvas + "px; background-color:black; opacity:1.0; left:0; right:0; z-index:1; margin-left:auto; margin-right:auto; border:1px solid #FFFFFF;"
 	menuDiv.setAttribute("style",styleString);
 	document.getElementById('pongPlacement').appendChild(menuDiv);
+	$("#menuDiv").hide().fadeIn(); // Looks nice fading in.
+}
+
+function loadMainMenu()
+{
+	// Here we start loading the menu elements since the menu itself is loaded
+	// First the title text and a bar under it
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "PONG - Main Menu";
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Now the single player clickable div
+	var singlePlayerButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Player vs AI";
+	tempHolder.id = "singlePlayerButtonText"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	singlePlayerButton.appendChild(tempHolder);
+	menuDiv.appendChild(singlePlayerButton);
+	// Now the two player local clickable div
+	var playerVsPlayerLocalButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Player vs Player Local";
+	tempHolder.id = "playerVsPlayerLocalButtonText"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	playerVsPlayerLocalButton.appendChild(tempHolder);
+	menuDiv.appendChild(playerVsPlayerLocalButton);
+	// Now the two player online clickable div
+	var playerVsPlayerOnlineButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Player vs Player Online";
+	tempHolder.id = "playerVsPlayerOnlineButtonText"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	playerVsPlayerOnlineButton.appendChild(tempHolder);
+	menuDiv.appendChild(playerVsPlayerOnlineButton);
+	// Now the clickable settings button which taked you to the settings menu
+	var settingsButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Settings";
+	tempHolder.id = "settingsButtonText"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	settingsButton.appendChild(tempHolder);
+	menuDiv.appendChild(settingsButton);
+	// Here we setup a hover handling thing to make the menu seem interactive
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeOut(100, function(){
+		$(this).css("color", "blue");
+		$(this).fadeIn(100);});
+		
+	});
+	// Now we set up separate handlers for each menu option
+	// Single player button
+	$("#singlePlayerButtonText").click(function()
+	{
+		emptyMenu();
+		loadSinglePlayerMenu();
+	});
+	// Player vs Player Local button
+	$("#playerVsPlayerLocalButtonText").click(function()
+	{
+		emptyMenu();
+		loadPlayerVsPlayerLocalMenu();
+	});
+	// Player vs Player Online button
+	$("#playerVsPlayerOnlineButtonText").click(function()
+	{
+		emptyMenu();
+		loadPlayerVsPlayerOnlineMenu();
+	});
+	// Settings button
+	$("#settingsButtonText").click(function()
+	{
+		emptyMenu();
+		loadSettingsMenu();
+	});
+	// Then we sit and wait for menuUp to be false
 	waitForMenuDown();
+}
+
+function loadSinglePlayerMenu()
+{
+	// Setup title
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "PONG - Player vs AI Setup";
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Enter number of points
+	// Start game
+	// Main menu
+}
+
+function loadPlayerVsPlayerLocalMenu()
+{
+	// Setup title
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "PONG - Player vs Player Local Setup";
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Enter number of points
+	// Start game
+	// Main menu
+}
+
+function loadPlayerVsPlayerOnlineMenu()
+{
+	// Setup title
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "PONG - Player vs Player Online Setup";
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Enter number of points
+	// Start game
+	// Main menu
+}
+
+function loadSettingsMenu()
+{
+	// Setup title
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "PONG - Settings";
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Input resolution
+	// Main menu
 }
 
 function waitForMenuDown()
@@ -307,22 +468,22 @@ function waitForMenuDown()
 		setTimeout(function(){waitForMenuDown()}, 100);
 	else
 	{
-		unloadMenu();
-		mainPong();
+		// Nice little fade out touch
+		$("#menuDiv").fadeOut(400, function()
+		{
+			unloadMenu();
+			mainPong();
+		});
 	}
+}
+
+function emptyMenu()
+{
+	$("#menuDiv").empty();
 }
 
 function unloadMenu()
 {
-	// Use a loop to remove all the child elements of that div and then remove the div itself. Or just remove the div?
-	/*
-	var placement = document.getElementById('menuDiv'); // Grabs the id of the menuDiv
-	while(placement.hasChildNodes()) // Run through this loop until menuDiv has no child elements
-	{
-		placement.removeChild(placement.firstChild); // Remove the first child element from within
-	}
-	document.getElementById('pongPlacement').removeChild(document.getElementById('menuDiv')); // Remove menuDiv itself
-	*/
 	$("#menuDiv").remove();
 }
 
@@ -386,7 +547,8 @@ function mainPong()
 {
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
-		loadMenu();
+		loadMenuBackground();
+		loadMainMenu();
 	}
 	else // Go to the actual game loop
 	{
