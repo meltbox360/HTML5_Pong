@@ -361,10 +361,8 @@ function loadMainMenu()
 		$(this).fadeIn(100);});
 	},function()
 	{
-		$(this).stop().fadeOut(100, function(){
-		$(this).css("color", "blue");
-		$(this).fadeIn(100);});
-		
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
 	});
 	// Now we set up separate handlers for each menu option
 	// Single player button
