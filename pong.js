@@ -531,11 +531,43 @@ function loadPlayerVsPlayerOnlineMenu()
 	// Some sort of game browser???? This needs to be thought out
 	// Enter number of points
 	// Start game
+	// Apply
+	var applyButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Not Implemented Yet. Sorry!";
+	tempHolder.id = "notImplemented"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOptionNOTTT";
+	applyButton.appendChild(tempHolder);
+	menuDiv.appendChild(applyButton);
 	// Main menu
+	var mainMenuButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Main Menu";
+	tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	mainMenuButton.appendChild(tempHolder);
+	menuDiv.appendChild(mainMenuButton);
+	// Button hover handlers
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
+	});
 	// Button click handlers
-	alert("Online play is not yet implemented. Sorry!"); // This page is a stub to build off later
-	emptyMenu();
-	loadMainMenu();
+	// Main menu button
+	$("#mainMenuButton").click(function()
+	{
+		emptyMenu();
+		loadMainMenu();
+	});
 }
 
 // Code related to settings menu
