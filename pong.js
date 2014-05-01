@@ -11,8 +11,11 @@ var yPosBall = 0; // The y-position of the ball as a fraction of the height of t
 var lastYPosBall = 0; // Stores the last y pos for detecting collisions
 var yVelocBall = 0; // The y-velocity of the ball as a fraction of the height of the canvas
 var yVelocBallBase = 0; // The base y velocity that the ball can return to when reset
+var maxYVelocBall = 0; // The highest xVelocity before no more speed is added per hit
 var xVelocBall = 0; // The x-velocity of the ball as a fraction of the width of the canvas
 var xVelocBallBase = 0; // The base x velocity that the ball can return to when reset
+var maxXVelocBall = 0; // The highest xVelocity before no more speed is added per hit
+var xVelocModifier = 0; // How much speed is added per hit on paddle
 var yPosPad1 = 0; // A fraction of the height of the canvas that specifies the y coordinate of the first paddle
 var xPosPad1 = 0; // A fraction of the width of the canvas that specifies the x coordinate of the first paddle
 var yPosPad2 = 0; // A fraction of the height of the canvas that specifies the y coordinate of the second paddle
@@ -73,6 +76,7 @@ var aiDifficulty = 0; // AI difficulty
 var justReset = true; // This is used to keep the ball from moving until a player moves a paddle. Moves the ball once it becomes false
 var gamePaused = false; // This will just be used to pause the game, nothing implemented to notify of this at the moment!!!!!
 var displayWin = false; // This is set so that the menu can be invoked to display a win
+var lastScored = 0; // 0 is for start the ball in a random direction (start of game), 1 is for player 1, 2 is for player 2.
 
 // Wait until the page loads to start running stuff
 // Just good practice
@@ -437,7 +441,101 @@ function loadSinglePlayerMenu()
 	$("#startGameButton").click(function()
 	{
 		// SETUP THE GAME FIRST!!!!
-		menuUp = false;
+		playerOnePoints = 0; // Zero the points
+		playerTwoPoints = 0;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset the paddle positions
+		yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
+		yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+		//VELOCITIES
+		// AI difficulty is set as soon as a button is pressed, don't have to handle that!
+		// Set the velocities somewhat different for each difficulty, easy and medium have the same.
+		if(aiDifficulty == 1)
+		{
+			// Easy
+			padOneYVeloc = .000002;
+			padOneXVeloc = .0000007;
+			
+			padTwoYVeloc = .000001;
+			padTwoXVeloc = .00000035;
+			
+			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+			xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+			
+			maxXVelocBall = .000002; // Maximum x velocity
+			maxYVelocBall = .0000025; // Maximum y velocity
+			
+			xVelocModifier = .15; // Fraction of original speed to add per hit
+		}
+		if(aiDifficulty == 2)
+		{
+			// Medium
+			padOneYVeloc = .000002;
+			padOneXVeloc = .0000007;
+			
+			padTwoYVeloc = .000002;
+			padTwoXVeloc = .0000007;
+			
+			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+			xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+			
+			maxXVelocBall = .000002; // Maximum x velocity
+			maxYVelocBall = .0000025; // Maximum y velocity
+			
+			xVelocModifier = .2; // Fraction of original speed to add per hit
+		}
+		if(aiDifficulty == 3)
+		{
+			// Hard
+			padOneYVeloc = .000002;
+			padOneXVeloc = .0000007;
+			
+			padTwoYVeloc = .0000025;
+			padTwoXVeloc = .0000007;
+			
+			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+			xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+			
+			maxXVelocBall = .0000025; // Maximum x velocity
+			maxYVelocBall = .000003; // Maximum y velocity
+			
+			xVelocModifier = .25; // Fraction of original speed to add per hit
+		}
+		if(aiDifficulty == 4)
+		{
+			// Brian Mode
+			padOneYVeloc = .000002;
+			padOneXVeloc = .0000007;
+			
+			padTwoYVeloc = .000004;
+			padTwoXVeloc = .0000007;
+			
+			yVelocBallBase = .000001; // Y velocity will chosen based off this at the start of a point
+			xVelocBallBase = .0000008; // X velocity will chosen based off this at the start of a point
+			
+			maxXVelocBall = .000004; // Maximum x velocity
+			maxYVelocBall = .000005; // Maximum y velocity
+			
+			xVelocModifier = .25; // Fraction of original speed to add per hit
+		}
+		// Set game mode
+		gameLocal = true; // Make sure the three states are set up correctly
+		gameVsAi = false;
+		gameOnline = false;
+		// Other state vars
+		lastScored = 0; // To start the ball in a random direction
+		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
+		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Stare value to process with limits
+		if(tempPoints > 30)
+			tempPoints = 30;
+		if(tempPoints < 1)
+			tempPoints = 1;
+		winPoints = tempPoints; // Set up the number of points that wins a game
+		menuUp = false; // And get rid of the menu so we can play!
 	});
 }
 
@@ -518,9 +616,26 @@ function loadPlayerVsPlayerLocalMenu()
 		xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
 		yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
 		xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+		//VELOCITIES
+		padOneYVeloc = .000002;
+		padOneXVeloc = .0000007;
+		
+		padTwoYVeloc = .000002;
+		padTwoXVeloc = .0000007;
+		
+		yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+		xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+		
+		maxXVelocBall = .000002; // Maximum x velocity
+		maxYVelocBall = .0000025; // Maximum y velocity
+		
+		xVelocModifier = .2; // Fraction of original speed to add per hit
+		// Set game mode
 		gameLocal = true; // Make sure the three states are set up correctly
 		gameVsAi = false;
 		gameOnline = false;
+		// Other state vars
+		lastScored = 0; // To start the ball in a random direction
 		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
 		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Stare value to process with limits
 		if(tempPoints > 30)
@@ -552,7 +667,7 @@ function loadPlayerVsPlayerOnlineMenu()
 	var applyButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
 	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
-	tempHolder.innerHTML = "Not Implemented Yet. Sorry!";
+	tempHolder.innerHTML = "Not Implemented Yet -- Sorry!";
 	tempHolder.id = "notImplemented"; // So that hover and click events can later be processed.
 	tempHolder.className = "menuOptionNOTTT";
 	applyButton.appendChild(tempHolder);
@@ -842,9 +957,35 @@ function detectCollision()
 			{
 				if(xVelocBall < 0)
 				{
+					// Paddle velocity modifiers
+					if((yPosPad1+((1/3)*padHeight)) > yPosBall)
+					{
+					// CHANGE TO MODIFY BY BASE SPEED!
+						yVelocBall = yVelocBall - (yVelocBallBase*.7)
+						var negate = 1;
+						if(yVelocBall < 0)
+							negate = -1;
+						if(Math.abs(yVelocBall) > maxYVelocBall)
+							yVelocBall = maxYVelocBall*negate;
+						//Case if ball hits upper third of paddle
+					}
+					else if((yPosPad1+((2/3)*padHeight)) < yPosBall)
+					{
+						//Case if ball hits lower third of paddle
+						yVelocBall = yVelocBall + (yVelocBallBase*.7)
+						var negate = 1;
+						if(yVelocBall < 0)
+							negate = -1;
+						if(Math.abs(yVelocBall) > maxYVelocBall)
+							yVelocBall = maxYVelocBall*negate;
+					}
+					// If the ball hits the center of the paddle the y velocity is not modified hence why that case is excluded
+					// xVelocity reflection
+					xVelocBall = -xVelocBall - (xVelocModifier*xVelocBallBase*-1);
+					if(Math.abs(xVelocBall) > maxXVelocBall)
+						xVelocBall = maxXVelocBall;
 					// Now reflect the ball
-					xPosBall = 2*xPosPad1 + 2*padWidth - xPosBall + 2*ballRadius; // Do not question took a while to calculate
-					xVelocBall = -xVelocBall;
+					xPosBall = 2*xPosPad1 + 2*padWidth - xPosBall + 2*ballRadius; // Do not question took a while to calculate, technicly wrong due to new y veloc modifiers...
 				}
 				else if(xVelocBall > 0)
 				{
@@ -860,9 +1001,34 @@ function detectCollision()
 			{
 				if(xVelocBall > 0)
 				{
+					// Paddle velocity modifiers
+					if((yPosPad2+((1/3)*padHeight)) > yPosBall)
+					{
+						yVelocBall = yVelocBall - (yVelocBallBase*.7)
+						var negate = 1;
+						if(yVelocBall < 0)
+							negate = -1;
+						if(Math.abs(yVelocBall) > maxYVelocBall)
+							yVelocBall = maxYVelocBall*negate;
+						//Case if ball hits upper third of paddle
+					}
+					else if((yPosPad2+((2/3)*padHeight)) < yPosBall)
+					{
+						//Case if ball hits lower third of paddle
+						yVelocBall = yVelocBall + (yVelocBallBase*.7)
+						var negate = 1;
+						if(yVelocBall < 0)
+							negate = -1;
+						if(Math.abs(yVelocBall) > maxYVelocBall)
+							yVelocBall = maxYVelocBall*negate;
+					}
+					// If the ball hits the center of the paddle the y velocity is not modified hence why that case is excluded
+					// xVelocity reflection
+					xVelocBall = -xVelocBall - (xVelocModifier*xVelocBallBase);
+					if(Math.abs(xVelocBall) > maxXVelocBall)
+						xVelocBall = maxXVelocBall*-1;
 					// Now reflect the ball
 					xPosBall = 2*xPosPad2 - xPosBall - 2*ballRadius; // Don't question, took a while to calculate....
-					xVelocBall = -xVelocBall;
 				}
 				else if(xVelocBall < 0)
 				{
@@ -923,6 +1089,10 @@ function positionUpdate()
 			xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
 		}
 	}
+	else if(gameVsAi)
+	{
+		// AI CODE GOES HERE!!!!
+	}
 }
 
 function detectPoint()
@@ -931,6 +1101,8 @@ function detectPoint()
 	{
 		// Give the player a point
 		playerOnePoints++;
+		// Set the player who last scored
+		lastScored = 1;
 		// Reset the ball
 		xPosBall = .5 - ballRadius*.5; // This and the next line
 		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
@@ -943,6 +1115,8 @@ function detectPoint()
 	{
 		// Give the player a point
 		playerTwoPoints++;
+		// Set the player who last scored
+		lastScored = 2;
 		// Reset the ball
 		xPosBall = .5 - ballRadius*.5; // This and the next line
 		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
@@ -1010,9 +1184,55 @@ function detectPoint()
 
 function waitUntilPlayerAction()
 {
-	if(padOneUp||padOneDown||padOneRight||padOneLeft||padTwoUp||padTwoDown||padTwoLeft||padTwoRight)
+	if((padOneUp||padOneDown||padOneRight||padOneLeft||padTwoUp||padTwoDown||padTwoLeft||padTwoRight)&&(justReset))
 	{
 		justReset = false;
+		// Now depending on the state setup the initial ball y and x velocities
+		// Yvelocity can be made random out here, doesn't depend on anything.
+		var negate;
+		if(Math.random() > 0.5)
+		{
+			negate = -1;
+		}
+		else
+		{
+			negate = 1;
+		}
+		yVelocBall = (yVelocBallBase*Math.random() + ((yVelocBallBase*Math.random())/5))*negate;
+		
+		if(lastScored == 1)
+		{
+			// Shoot it in the direction of player 2 (+x)
+			negate = 1;
+		}
+		else if(lastScored == 2)
+		{
+			// Shoot it in the direction of player 1 (-x)
+			negate = -1;
+		}
+		else
+		{
+			// Random case
+			if(Math.random() > 0.5)
+			{
+				negate = -1;
+			}
+			else
+			{
+				negate = 1;
+			}
+		}
+		//Now that negate is set just assign an x velocity!
+		var subOrAdd;
+		if(Math.random() > 0.5)
+		{
+			subOrAdd = 1;
+		}
+		else
+		{
+			subOrAdd = -1;
+		}
+		xVelocBall = (xVelocBallBase + subOrAdd*((xVelocBallBase*Math.random())/5))*negate;
 	}
 }
 
