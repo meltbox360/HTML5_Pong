@@ -206,18 +206,15 @@ $(document).keydown(function(event)
 		padOneLeft = true;
 	if(keyPressed == keyRightPlayer1)
 		padOneRight = true;
-	if(!gameVsAi)
-	{
-		// Check for player 2 controls
-		if(keyPressed == keyUpPlayer2)
-			padTwoUp = true;
-		if(keyPressed == keyDownPlayer2)
-			padTwoDown = true;
-		if(keyPressed == keyLeftPlayer2)
-			padTwoLeft = true;
-		if(keyPressed == keyRightPlayer2)
-			padTwoRight = true;
-	}
+	// Check for player 2 controls
+	if(keyPressed == keyUpPlayer2)
+		padTwoUp = true;
+	if(keyPressed == keyDownPlayer2)
+		padTwoDown = true;
+	if(keyPressed == keyLeftPlayer2)
+		padTwoLeft = true;
+	if(keyPressed == keyRightPlayer2)
+		padTwoRight = true;
 	// Bring up the menu (esc)
 	if(keyPressed == 27)
 		menuUp = true;
@@ -238,19 +235,16 @@ $(document).keyup(function(event)
 	if(keyReleased == keyLeftPlayer1)
 		padOneLeft = false;
 	if(keyReleased == keyRightPlayer1)
-		padOneRight = false;
-	if(!gameVsAi)
-	{
-		// Check for player 2 controls
-		if(keyReleased == keyUpPlayer2)
-			padTwoUp = false;
-		if(keyReleased == keyDownPlayer2)
-			padTwoDown = false;
-		if(keyReleased == keyLeftPlayer2)
-			padTwoLeft = false;
-		if(keyReleased == keyRightPlayer2)
-			padTwoRight = false;
-	}
+	padOneRight = false;
+	// Check for player 2 controls
+	if(keyReleased == keyUpPlayer2)
+		padTwoUp = false;
+	if(keyReleased == keyDownPlayer2)
+		padTwoDown = false;
+	if(keyReleased == keyLeftPlayer2)
+		padTwoLeft = false;
+	if(keyReleased == keyRightPlayer2)
+		padTwoRight = false;
 });
 
 function loadMenuBackground()
@@ -1064,13 +1058,15 @@ function positionUpdate()
 		{
 			if(yPosBall > (yPosPad2+(padHeight/2)))
 			{
-				padTwoDown = true;
-				padTwoUp = false;
+				yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+				if(yPosBall < (yPosPad2+(padHeight/2)))
+					yPosPad2 = yPosBall-(padHeight/2);
 			}
-			if(yPosBall < (yPosPad2+(padHeight/2)))
+			else if(yPosBall < (yPosPad2+(padHeight/2)))
 			{
-				padTwoUp = true;
-				padTwoDown = false;
+				yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
+				if(yPosBall > (yPosPad2+(padHeight/2)))
+					yPosPad2 = yPosBall-(padHeight/2);
 			}
 		}
 	}
@@ -1092,22 +1088,25 @@ function positionUpdate()
 		xPosPad1 -= padOneXVeloc*widthCanvas*deltaTime; // To the left if negative
 	}
 	// Update second player's paddle position
-	if(padTwoUp)
+	if(gameLocal)
 	{
-		yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
-	}
-	if(padTwoDown)
-	{
-		yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
-	}
-	// Update xpos
-	if(padTwoRight)
-	{
-		xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
-	}
-	if(padTwoLeft)
-	{
-		xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
+		if(padTwoUp)
+		{
+			yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
+		}
+		if(padTwoDown)
+		{
+			yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+		}
+		// Update xpos
+		if(padTwoRight)
+		{
+			xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
+		}
+		if(padTwoLeft)
+		{
+			xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
+		}
 	}
 }
 
