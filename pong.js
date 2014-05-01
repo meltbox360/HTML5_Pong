@@ -10,13 +10,16 @@ var lastXPosBall = 0; // Stores the last x pos for detecting collisions
 var yPosBall = 0; // The y-position of the ball as a fraction of the height of the canvas
 var lastYPosBall = 0; // Stores the last y pos for detecting collisions
 var yVelocBall = 0; // The y-velocity of the ball as a fraction of the height of the canvas
+var yVelocBallBase = 0; // The base y velocity that the ball can return to when reset
 var xVelocBall = 0; // The x-velocity of the ball as a fraction of the width of the canvas
+var xVelocBallBase = 0; // The base x velocity that the ball can return to when reset
 var yPosPad1 = 0; // A fraction of the height of the canvas that specifies the y coordinate of the first paddle
 var xPosPad1 = 0; // A fraction of the width of the canvas that specifies the x coordinate of the first paddle
 var yPosPad2 = 0; // A fraction of the height of the canvas that specifies the y coordinate of the second paddle
 var xPosPad2 = 0; // A fraction of the width of the canvas that specifies the x coordinate of the second paddle
 var padHeight = (1/7); // A fraction of the hight of the canvas which the pads are
 var padWidth = (1/100); // A fraction of the width of the canvas which the pads are
+var ballRadius = 0; // Fraction which signifies the radius of the ball
 var widthCenterLine = 0; // Width of centerline
 var padOneYVeloc = 0.0; // The y-velocity of pad one as a fraction of the height of the canvas
 var padOneXVeloc = 0.0; // The x-velocity of pad one as a fraction of the width of the canvas --------------------- Currently not in use!
@@ -24,7 +27,7 @@ var padTwoYVeloc = 0; // The y-velocity of pad two as a fraction of the height o
 var padTwoXVeloc = 0; // The x-velocity of pad two as a fraction of the width of the canvas --------------------- Currently not in use!
 // end
 
-var menuUp = false; // Is the menu up?
+var menuUp = true; // Is the menu up? Start with the menu displayed
 
 var padOneUp = false; // Is the up key for pad one being pressed?
 var padOneDown = false; // Is the down key for pad one being pressed?
@@ -58,6 +61,18 @@ var keyDownPlayer2 = 40; // down key
 var keyLeftPlayer2 = 37; // left key
 var keyRightPlayer2 = 39; // right key
 // End keyCode control defines
+
+// Variables that define type of game being played
+var winPoints = 0; // The number of points you play up to
+var gameVsAi = false; // A flag that determines whether the game is against AI or not
+var gameOnline = false; // A flag that determines whether the game is against a player online, currently not implemented
+var gameLocal = false; // A flag that determines whether the game is against a player locally
+var playerOnePoints = 0; // Number of points player one currently has
+var playerTwoPoints = 0; // Number of points player two currently has
+var aiDifficulty = 0; // AI difficulty
+var justReset = true; // This is used to keep the ball from moving until a player moves a paddle. Moves the ball once it becomes false
+var gamePaused = false; // This will just be used to pause the game, nothing implemented to notify of this at the moment!!!!!
+var displayWin = false; // This is set so that the menu can be invoked to display a win
 
 // Wait until the page loads to start running stuff
 // Just good practice
@@ -164,81 +179,14 @@ function setupInitialPositions()
 	xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
 	
 	//VELOCITIES
-	padOneYVeloc = .00001;
-	padOneXVeloc = .000002;
+	padOneYVeloc = .000002;
+	padOneXVeloc = .0000007;
 	
-	padTwoYVeloc = .00001;
-	padTwoXVeloc = .000002;
-}
-
-function renderPong()
-{
-	//Clear the background
-	CTX2D.clearRect(0,0,widthCanvas,heightCanvas);
+	padTwoYVeloc = .000002;
+	padTwoXVeloc = .0000007;
 	
-	//Make background white so it is different from page background
-	CTX2D.beginPath();
-	CTX2D.rect(0,0,widthCanvas,heightCanvas);
-	CTX2D.fillStyle = 'blue';
-	CTX2D.fill();
-	
-	// Draw the ball.
-	CTX2D.beginPath();
-	CTX2D.arc(xPosBall*widthCanvas,yPosBall*heightCanvas,ballRadius*widthCanvas,0,2*Math.PI);
-	CTX2D.fillStyle = 'black';
-	CTX2D.fill();
-	
-	// Draw paddle 1
-	CTX2D.beginPath();
-	CTX2D.rect(xPosPad1*widthCanvas,yPosPad1*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
-	CTX2D.fill();
-	
-	// Draw paddle 2
-	CTX2D.beginPath(); // This seems to be not necessary, yay optimization later?
-	CTX2D.rect(xPosPad2*widthCanvas,yPosPad2*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
-	CTX2D.fill();
-	
-	//Centerline drawn through a rect
-	CTX2D.beginPath();
-	CTX2D.rect((.5-widthCenterLine)*widthCanvas,0,.5*widthCenterLine*widthCanvas,heightCanvas);
-	CTX2D.fill();
-	
-	
-	//FINISH THE RENDERING HERE (scores, centerline, uhhhh perhaps menu?)
-	
-	//CTX2D.beginPath();
-	//CTX2D.font = "30px Arial";
-	//CTX2D.fillText("Hello World",10,50);
-}
-
-function detectCollision()
-{
-	// First make sure the paddles are in bounds! This ensures collisions are calculated correctly
-	if(yPosPad1 > (1-padHeight))
-		yPosPad1 = 1-padHeight;
-	else if(yPosPad1 < 0)
-		yPosPad1 = 0;
-	// XPOS Check
-	if(xPosPad1 < 0)
-		xPosPad1 = 0;
-	else if(xPosPad1 > .25)
-		xPosPad1 = .25;
-	// Check the second paddle
-	if(yPosPad2 > (1-padHeight))
-		yPosPad2  = 1-padHeight;
-	else if(yPosPad2 < 0)
-		yPosPad2 = 0;
-	// XPOS Check
-	if(xPosPad2 > (1-padWidth))
-	{
-		xPosPad2 = 1-padWidth;
-	}
-	else if(xPosPad2 < (1-.25-padWidth))
-	{
-		xPosPad2 = 1-.25-padWidth;
-	}
-	//Check if ball bounced off a paddle
-	
+	yVelocBall = .0000005; // This will be set elsewhere
+	xVelocBall = .0000005; // This will be set elsewhere
 }
 
 // Detect keydowns and update vars.
@@ -265,7 +213,10 @@ $(document).keydown(function(event)
 		padTwoRight = true;
 	// Bring up the menu (esc)
 	if(keyPressed == 27)
-		menuUp = !menuUp; //CHANGE THIS TO BE TRUE LATER MENU CANT BE EXITED LIKE THIS also player should start with a menu up for game mode selection and the such
+		menuUp = true;
+	// For pausing using 'p'
+	if(keyPressed == 80)
+		gamePaused = !gamePaused;
 });
 
 // Detect keydowns and update vars.
@@ -407,9 +358,44 @@ function loadSinglePlayerMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Enter number of points
-	
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Play Until (1-30): ")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("type", "number");
+	tempHolder.setAttribute("id", "pointsInput");
+	tempHolder.setAttribute("min", "1");
+	tempHolder.setAttribute("max", "30");
+	tempHolder.setAttribute("value", 10);
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
 	// Enter difficulty
-	
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Difficulty: ")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("button");
+	tempHolder.setAttribute("type","button");
+	tempHolder.innerHTML = "Easy"; // Text in button
+	tempHolder.onclick = function(){aiDifficulty = 1;}; // Set the difficulty to 1
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("button");
+	tempHolder.setAttribute("type","button");
+	tempHolder.innerHTML = "Medium"; // Text in button
+	tempHolder.onclick = function(){aiDifficulty = 2;}; // Set the difficulty to 2
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("button");
+	tempHolder.setAttribute("type","button");
+	tempHolder.innerHTML = "Hard"; // Text in button
+	tempHolder.onclick = function(){aiDifficulty = 3;}; // Set the difficulty to 3
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("button");
+	tempHolder.setAttribute("type","button");
+	tempHolder.innerHTML = "Brian"; // Text in button
+	tempHolder.onclick = function(){aiDifficulty = 4;}; // Set the difficulty to 4
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
 	// Start game
 	var startGameButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
@@ -469,7 +455,18 @@ function loadPlayerVsPlayerLocalMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Enter number of points
-	
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Play Until (1-30): ")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("type", "number");
+	tempHolder.setAttribute("id", "pointsInput");
+	tempHolder.setAttribute("min", "1");
+	tempHolder.setAttribute("max", "30");
+	tempHolder.setAttribute("value", 10);
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
 	// Start game
 	var startGameButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
@@ -511,7 +508,27 @@ function loadPlayerVsPlayerLocalMenu()
 	$("#startGameButton").click(function()
 	{
 		// SETUP THE GAME FIRST!!!!
-		menuUp = false;
+		playerOnePoints = 0; // Zero the points
+		playerTwoPoints = 0;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset the paddle positions
+		yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
+		yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+		gameLocal = true; // Make sure the three states are set up correctly
+		gameVsAi = false;
+		gameOnline = false;
+		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
+		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Stare value to process with limits
+		if(tempPoints > 30)
+			tempPoints = 30;
+		if(tempPoints < 1)
+			tempPoints = 1;
+		winPoints = tempPoints; // Set up the number of points that wins a game
+		menuUp = false; // And get rid of the menu so we can play!
 	});
 }
 
@@ -531,7 +548,7 @@ function loadPlayerVsPlayerOnlineMenu()
 	// Some sort of game browser???? This needs to be thought out
 	// Enter number of points
 	// Start game
-	// Apply
+	// Sorry it doesnt work text
 	var applyButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
 	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
@@ -584,10 +601,9 @@ function loadSettingsMenu()
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
 	// Input resolution
-	var resolutionInput = document.createElement("div");
 	var tempHolder2 = document.createElement("H2");
 	tempHolder2.setAttribute("style", "color:blue; text-align:center");
-	tempHolder = document.createTextNode("Width:")
+	tempHolder = document.createTextNode("Width: ")
 	tempHolder2.appendChild(tempHolder);
 	tempHolder = document.createElement("input");
 	tempHolder.setAttribute("type", "number");
@@ -596,7 +612,7 @@ function loadSettingsMenu()
 	tempHolder.setAttribute("max", "2000");
 	tempHolder.setAttribute("value", widthCanvas);
 	tempHolder2.appendChild(tempHolder);
-	tempHolder = document.createTextNode("  Height:")
+	tempHolder = document.createTextNode("  Height: ")
 	tempHolder2.appendChild(tempHolder);
 	tempHolder = document.createElement("input");
 	tempHolder.setAttribute("type", "number");
@@ -693,6 +709,171 @@ function unloadMenu()
 	$("#menuDiv").remove();
 }
 
+function renderPong()
+{
+	//Clear the background
+	CTX2D.clearRect(0,0,widthCanvas,heightCanvas);
+	
+	//Make background white so it is different from page background
+	CTX2D.beginPath();
+	CTX2D.rect(0,0,widthCanvas,heightCanvas);
+	CTX2D.fillStyle = 'blue';
+	CTX2D.fill();
+
+	// Draw the scores on the screen	
+	CTX2D.beginPath();
+	CTX2D.fillStyle = 'white';
+	CTX2D.font = "100px Arial";
+	CTX2D.fillText(playerOnePoints,(widthCanvas/2)-120,100);
+	CTX2D.fillText(playerTwoPoints,(widthCanvas/2)+10,100);
+	
+	// Draw the ball.
+	CTX2D.beginPath();
+	CTX2D.arc(xPosBall*widthCanvas,yPosBall*heightCanvas,ballRadius*widthCanvas,0,2*Math.PI);
+	CTX2D.fillStyle = 'black';
+	CTX2D.fill();
+	
+	// Draw paddle 1
+	CTX2D.beginPath();
+	CTX2D.rect(xPosPad1*widthCanvas,yPosPad1*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
+	CTX2D.fill();
+	
+	// Draw paddle 2
+	CTX2D.beginPath(); // This seems to be not necessary, yay optimization later?
+	CTX2D.rect(xPosPad2*widthCanvas,yPosPad2*heightCanvas,padWidth*widthCanvas,padHeight*heightCanvas);
+	CTX2D.fill();
+	
+	// Centerline drawn through a rect
+	CTX2D.beginPath();
+	CTX2D.rect((.5-widthCenterLine)*widthCanvas,0,.5*widthCenterLine*widthCanvas,heightCanvas);
+	CTX2D.fill();
+}
+
+function detectCollision()
+{
+	// First make sure the paddles are in bounds! This ensures collisions are calculated correctly
+	if(yPosPad1 > (1-padHeight))
+		yPosPad1 = 1-padHeight;
+	else if(yPosPad1 < 0)
+		yPosPad1 = 0;
+	// XPOS Check
+	if(xPosPad1 < 0)
+		xPosPad1 = 0;
+	else if(xPosPad1 > .25)
+		xPosPad1 = .25;
+	// Check the second paddle
+	if(yPosPad2 > (1-padHeight))
+		yPosPad2  = 1-padHeight;
+	else if(yPosPad2 < 0)
+		yPosPad2 = 0;
+	// XPOS Check
+	if(xPosPad2 > (1-padWidth))
+	{
+		xPosPad2 = 1-padWidth;
+	}
+	else if(xPosPad2 < (1-.25-padWidth))
+	{
+		xPosPad2 = 1-.25-padWidth;
+	}
+	// Now we do a loop that the ball can only exit if it is within the y confines
+	// We want it to run at least once to check for a paddle collision
+	do
+	{
+		if(yPosBall < (0+ballRadius))
+		{
+			//lastYPosBall = yPosBall; // Perhaps dont set this, setting it enables the ball to sort of bounce around the paddle, not setting it makes this less likely except with lots of lag
+			//Last ball position needs to be set in a more complicated way to be bulletproof (currently lag can lag a ball through a paddle)
+			yPosBall = 2*ballRadius - yPosBall; // Don't question, this took a while to figure out.
+			yVelocBall = -yVelocBall; // Simple
+		}
+		if(yPosBall > (1-ballRadius))
+		{
+			//lastYPosBall = yPosBall;
+			//Last ball position needs to be set in a more complicated way to be bulletproof
+			yPosBall = 2 - yPosBall - 2*ballRadius; // Also don't question, took me a while to figure
+			yVelocBall = -yVelocBall; // Simple
+		}
+		//Below is nice code that is not effected by lag but I abandoned because it doesn't seem to work, I'll revisit it
+		/*
+		// Now we check to see if paddle collision occured
+		var slopeBall = (yVelocBall)/(xVelocBall);//(lastYPosBall-yPosBall)/(lastXPosBall - xPosBall);
+		var padOneLowerBound = yPosPad1+padHeight+ballRadius; // Lower as in lower on the screen but actually higher value
+		var padTwoLowerBound = yPosPad2+padHeight+ballRadius;
+		var padOneUpperBound = yPosPad1-ballRadius;
+		var padTwoUpperBound = yPosPad2-ballRadius;
+		var ballYPad1 = lastYPosBall + slopeBall*(xPosPad1+padWidth); // padwidth is added so the ycoord of the inside facing wall is taken
+		var ballYPad2 = lastYPosBall + slopeBall*xPosPad2;
+		// Condition for coliding with pad 1
+		if((ballYPad1<padOneLowerBound)&&(ballYPad1>padOneUpperBound))
+		{
+			// Now check if the paddle is between the new and old xcoords of the ball
+			if(xVelocBall < 0) // If the velocity is not negative this paddle will not be reflecting it anyways
+			{
+				if(((lastXPosBall-ballRadius) >= (xPosPad1+padWidth))&&((xPosBall-ballRadius) < (xPosPad1+padWidth)))
+				{
+					// Do whatever if collision is detected
+					xPosBall = 2*xPosPad1 + 2*padWidth - xPosBall + 2*ballRadius; // Do not question took a while to calculate
+					xVelocBall = -xVelocBall;
+				}
+			}
+		}
+		// Condition for coliding with pad 2
+		if((ballYPad2<padTwoLowerBound)&&(ballYPad2>padTwoUpperBound))
+		{
+			// Now check if the paddle is between the new and old xcoords of the ball
+			if(xVelocBall > 0) // If the velocity is not positive this paddle will not be reflecting it anyways
+			{
+				if(((lastXPosBall+ballRadius) <= xPosPad2)&&((xPosBall+ballRadius) > xPosPad2))
+				{
+					// Do whatever if collision is detected
+					xPosBall = 2*xPosPad2 - xPosBall - 2*ballRadius; // Don't question, took a while to calculate....
+					xVelocBall = -xVelocBall;
+				}
+			}
+		}*/
+		
+		//Problem with below is odd behaviour when you hit with the very edge. Looks odd sometimes
+		
+		// The following means the ball is coliding in the x domain with paddle1
+		if(((xPosBall-ballRadius)<(xPosPad1+padWidth))&&((xPosBall+ballRadius)>xPosPad1))
+		{
+			// Now make sure that the ball is in the appropriate y domain
+			if((yPosBall>(yPosPad1-ballRadius))&&(yPosBall<(yPosPad1+padHeight+ballRadius)))
+			{
+				if(xVelocBall < 0)
+				{
+					// Now reflect the ball
+					xPosBall = 2*xPosPad1 + 2*padWidth - xPosBall + 2*ballRadius; // Do not question took a while to calculate
+					xVelocBall = -xVelocBall;
+				}
+				else if(xVelocBall > 0)
+				{
+					// Need to calculate it out
+				}
+			}
+		}
+		// The following means the ball is coliding in the x domain with paddle2
+		if(((xPosBall+ballRadius)>xPosPad2)&&((xPosBall-ballRadius)<(xPosPad2+padWidth)))
+		{
+			// Now make sure that the ball is in the appropriate y domain
+			if((yPosBall>(yPosPad2-ballRadius))&&(yPosBall<(yPosPad2+padHeight+ballRadius)))
+			{
+				if(xVelocBall > 0)
+				{
+					// Now reflect the ball
+					xPosBall = 2*xPosPad2 - xPosBall - 2*ballRadius; // Don't question, took a while to calculate....
+					xVelocBall = -xVelocBall;
+				}
+				else if(xVelocBall < 0)
+				{
+					// Need to calculate it out
+				}
+			}
+		}
+	}
+	while((yPosBall < (0+ballRadius))||(yPosBall > (1-ballRadius)));
+}
+
 function positionUpdate()
 {
 	// Update Ball Position
@@ -721,23 +902,117 @@ function positionUpdate()
 	{
 		xPosPad1 -= padOneXVeloc*widthCanvas*deltaTime; // To the left if negative
 	}
-	// Update second player's paddle position
-	if(padTwoUp)
+	if(gameLocal)
 	{
-		yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
+		// Update second player's paddle position
+		if(padTwoUp)
+		{
+			yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
+		}
+		if(padTwoDown)
+		{
+			yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+		}
+		// Update xpos
+		if(padTwoRight)
+		{
+			xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
+		}
+		if(padTwoLeft)
+		{
+			xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
+		}
 	}
-	if(padTwoDown)
+}
+
+function detectPoint()
+{
+	if(xPosBall > 1)
 	{
-		yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+		// Give the player a point
+		playerOnePoints++;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset ball velocity
+		
+		// Set reset var to true
+		justReset = true;
 	}
-	// Update xpos
-	if(padTwoRight)
+	else if(xPosBall < 0)
 	{
-		xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
+		// Give the player a point
+		playerTwoPoints++;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset ball velocity
+		
+		// Set reset var to true
+		justReset = true;
 	}
-	if(padTwoLeft)
+	if((playerOnePoints == winPoints)||(playerTwoPoints == winPoints))
 	{
-		xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
+		var winText;
+		if(playerOnePoints == winPoints)
+			winText = "Player 1 Wins!";
+		else
+		{
+			if(gameVsAi)
+				winText = "AI Wins!";
+			else
+				winText = "Player 2 Wins!";
+		}
+		// Resets should happen when you start a game from the menu so you can skip it here
+		menuUp = true; //Set this or you will be running the game loop pointlessly, bad things will happen!
+		displayWin = true;
+		loadMenuBackground();
+		// Setup title
+		var titleText = document.createElement("div");
+		var tempHolder = document.createElement("H1");
+		tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+		tempHolder.innerHTML = winText;
+		titleText.appendChild(tempHolder);
+		tempHolder = document.createElement("hr");
+		tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+		titleText.appendChild(tempHolder);
+		menuDiv.appendChild(titleText);
+		// Main menu
+		var mainMenuButton = document.createElement("div");
+		tempHolder = document.createElement("H2");
+		tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+		tempHolder.innerHTML = "Main Menu";
+		tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+		tempHolder.className = "menuOption";
+		mainMenuButton.appendChild(tempHolder);
+		menuDiv.appendChild(mainMenuButton);
+		// Button hover handlers
+		$(".menuOption").hover(function()
+		{
+			// Mouse enter animation
+			$(this).stop().fadeOut(100,function(){
+			$(this).css("color", "red");
+			$(this).fadeIn(100);});
+		},function()
+		{
+			$(this).stop().fadeIn(100);
+			$(this).css("color", "blue");		
+		});
+		// Button click handlers
+		// Main menu button
+		$("#mainMenuButton").click(function()
+		{
+			emptyMenu();
+			loadMainMenu();
+		});
+	}
+}
+
+function waitUntilPlayerAction()
+{
+	if(padOneUp||padOneDown||padOneRight||padOneLeft||padTwoUp||padTwoDown||padTwoLeft||padTwoRight)
+	{
+		justReset = false;
 	}
 }
 
@@ -753,18 +1028,31 @@ function mainPong()
 {
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
-		loadMenuBackground();
-		loadMainMenu();
+		if(!displayWin)
+		{
+			loadMenuBackground();
+			loadMainMenu();
+		}
+		displayWin = false;
 	}
 	else // Go to the actual game loop
 	{
-		// Render everything to the screen
+		// Render everything to the screen, this can happen every cycle
 		renderPong();
-		// Update positions of things just based off velocity
-		positionUpdate();
-		// Detect collisions and update positions and velocities based off collisions
-		detectCollision();
-		// Make sure that timing is correct and that the page remains responsive with 'sleeps'
+		if(justReset || gamePaused) // The paused is just thrown in since it works
+		{
+			waitUntilPlayerAction();
+		}
+		else
+		{
+			// Update positions of things just based off velocity
+			positionUpdate();
+			// Detect collisions and update positions and velocities based off collisions
+			detectCollision();
+			// Update score if the ball is off on one side and then reset everything, so on so forth
+			detectPoint();
+		}
+		// Make sure that timing is correct and that the page remains responsive with 'sleeps' can run every cycle
 		framePacing();
 	}
 }
