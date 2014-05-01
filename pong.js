@@ -72,7 +72,7 @@ var gameOnline = false; // A flag that determines whether the game is against a 
 var gameLocal = false; // A flag that determines whether the game is against a player locally
 var playerOnePoints = 0; // Number of points player one currently has
 var playerTwoPoints = 0; // Number of points player two currently has
-var aiDifficulty = 0; // AI difficulty
+var aiDifficulty = 1; // AI difficulty, set to easy in case no one presses a button in menu
 var justReset = true; // This is used to keep the ball from moving until a player moves a paddle. Moves the ball once it becomes false
 var gamePaused = false; // This will just be used to pause the game, nothing implemented to notify of this at the moment!!!!!
 var displayWin = false; // This is set so that the menu can be invoked to display a win
@@ -206,15 +206,18 @@ $(document).keydown(function(event)
 		padOneLeft = true;
 	if(keyPressed == keyRightPlayer1)
 		padOneRight = true;
-	// Check for player 2 controls
-	if(keyPressed == keyUpPlayer2)
-		padTwoUp = true;
-	if(keyPressed == keyDownPlayer2)
-		padTwoDown = true;
-	if(keyPressed == keyLeftPlayer2)
-		padTwoLeft = true;
-	if(keyPressed == keyRightPlayer2)
-		padTwoRight = true;
+	if(!gameVsAi)
+	{
+		// Check for player 2 controls
+		if(keyPressed == keyUpPlayer2)
+			padTwoUp = true;
+		if(keyPressed == keyDownPlayer2)
+			padTwoDown = true;
+		if(keyPressed == keyLeftPlayer2)
+			padTwoLeft = true;
+		if(keyPressed == keyRightPlayer2)
+			padTwoRight = true;
+	}
 	// Bring up the menu (esc)
 	if(keyPressed == 27)
 		menuUp = true;
@@ -236,15 +239,18 @@ $(document).keyup(function(event)
 		padOneLeft = false;
 	if(keyReleased == keyRightPlayer1)
 		padOneRight = false;
-	// Check for player 2 controls
-	if(keyReleased == keyUpPlayer2)
-		padTwoUp = false;
-	if(keyReleased == keyDownPlayer2)
-		padTwoDown = false;
-	if(keyReleased == keyLeftPlayer2)
-		padTwoLeft = false;
-	if(keyReleased == keyRightPlayer2)
-		padTwoRight = false;
+	if(!gameVsAi)
+	{
+		// Check for player 2 controls
+		if(keyReleased == keyUpPlayer2)
+			padTwoUp = false;
+		if(keyReleased == keyDownPlayer2)
+			padTwoDown = false;
+		if(keyReleased == keyLeftPlayer2)
+			padTwoLeft = false;
+		if(keyReleased == keyRightPlayer2)
+			padTwoRight = false;
+	}
 });
 
 function loadMenuBackground()
@@ -523,13 +529,13 @@ function loadSinglePlayerMenu()
 			xVelocModifier = .25; // Fraction of original speed to add per hit
 		}
 		// Set game mode
-		gameLocal = true; // Make sure the three states are set up correctly
-		gameVsAi = false;
+		gameLocal = false; // Make sure the three states are set up correctly
+		gameVsAi = true;
 		gameOnline = false;
 		// Other state vars
 		lastScored = 0; // To start the ball in a random direction
 		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
-		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Stare value to process with limits
+		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Store value to process with limits
 		if(tempPoints > 30)
 			tempPoints = 30;
 		if(tempPoints < 1)
@@ -637,7 +643,7 @@ function loadPlayerVsPlayerLocalMenu()
 		// Other state vars
 		lastScored = 0; // To start the ball in a random direction
 		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
-		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Stare value to process with limits
+		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Store value to process with limits
 		if(tempPoints > 30)
 			tempPoints = 30;
 		if(tempPoints < 1)
@@ -1051,6 +1057,23 @@ function positionUpdate()
 	
 	// Update Paddle Position
 	// Update first paddle position
+	if(gameVsAi)
+	{
+		// Don't bother with moving the AI paddle unless the ball is headed to the right
+		if(xVelocBall > 0)
+		{
+			if(yPosBall > (yPosPad2+(padHeight/2)))
+			{
+				padTwoDown = true;
+				padTwoUp = false;
+			}
+			if(yPosBall < (yPosPad2+(padHeight/2)))
+			{
+				padTwoUp = true;
+				padTwoDown = false;
+			}
+		}
+	}
 	if(padOneUp)
 	{
 		yPosPad1 -= padOneYVeloc*heightCanvas*deltaTime; // In a canvas (0,0) is top left
@@ -1068,30 +1091,23 @@ function positionUpdate()
 	{
 		xPosPad1 -= padOneXVeloc*widthCanvas*deltaTime; // To the left if negative
 	}
-	if(gameLocal)
+	// Update second player's paddle position
+	if(padTwoUp)
 	{
-		// Update second player's paddle position
-		if(padTwoUp)
-		{
-			yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
-		}
-		if(padTwoDown)
-		{
-			yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
-		}
-		// Update xpos
-		if(padTwoRight)
-		{
-			xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
-		}
-		if(padTwoLeft)
-		{
-			xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
-		}
+		yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
 	}
-	else if(gameVsAi)
+	if(padTwoDown)
 	{
-		// AI CODE GOES HERE!!!!
+		yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
+	}
+	// Update xpos
+	if(padTwoRight)
+	{
+		xPosPad2 += padTwoXVeloc*widthCanvas*deltaTime;
+	}
+	if(padTwoLeft)
+	{
+		xPosPad2 -= padTwoXVeloc*widthCanvas*deltaTime;
 	}
 }
 
