@@ -1050,9 +1050,9 @@ function detectCollision()
 function aiRandRefresh()
 {
 	if(Math.random() > 0.5)
-		aiRandOffset = -Math.random()*(padHeight/2);
+		aiRandOffset = -Math.random()*padHeight*.5; // This will make the variation too large but thats okay, will make it not miss for hard
 	else
-		aiRandOffset = Math.random()*(padHeight/2);
+		aiRandOffset = Math.random()*padHeight*.5;
 	isRandInProgress = false;
 }
 
@@ -1080,14 +1080,14 @@ function positionUpdate()
 			if(yPosBall > ((yPosPad2+(padHeight/2))+aiRandOffset))
 			{
 				yPosPad2 += padTwoYVeloc*heightCanvas*deltaTime;
-				if(yPosBall < (yPosPad2+(padHeight/2)))
-					yPosPad2 = yPosBall-(padHeight/2);
+				if(yPosBall < ((yPosPad2+(padHeight/2))+aiRandOffset))
+					yPosPad2 = yPosBall-(padHeight/2)-aiRandOffset;
 			}
 			else if(yPosBall < ((yPosPad2+(padHeight/2))+aiRandOffset))
 			{
 				yPosPad2 -= padTwoYVeloc*heightCanvas*deltaTime;
-				if(yPosBall > (yPosPad2+(padHeight/2)))
-					yPosPad2 = yPosBall-(padHeight/2);
+				if(yPosBall > ((yPosPad2+(padHeight/2))+aiRandOffset))
+					yPosPad2 = yPosBall-(padHeight/2)-aiRandOffset;
 			}
 		}
 	}
