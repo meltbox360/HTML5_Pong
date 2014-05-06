@@ -460,7 +460,7 @@ function loadSinglePlayerMenu()
 			padOneYVeloc = .000002;
 			padOneXVeloc = .0000007;
 			
-			padTwoYVeloc = .000001;
+			padTwoYVeloc = .0000007;
 			padTwoXVeloc = .00000035;
 			
 			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
@@ -477,8 +477,8 @@ function loadSinglePlayerMenu()
 			padOneYVeloc = .000002;
 			padOneXVeloc = .0000007;
 			
-			padTwoYVeloc = .000002;
-			padTwoXVeloc = .0000007;
+			padTwoYVeloc = .000001;
+			padTwoXVeloc = .00000035;
 			
 			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
 			xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
@@ -486,7 +486,7 @@ function loadSinglePlayerMenu()
 			maxXVelocBall = .000002; // Maximum x velocity
 			maxYVelocBall = .0000025; // Maximum y velocity
 			
-			xVelocModifier = .2; // Fraction of original speed to add per hit
+			xVelocModifier = .15; // Fraction of original speed to add per hit
 		}
 		if(aiDifficulty == 3)
 		{
@@ -958,27 +958,23 @@ function detectCollision()
 				if(xVelocBall < 0)
 				{
 					// Paddle velocity modifiers
-					if((yPosPad1+((1/3)*padHeight)) > yPosBall)
+					var midPad = yPosPad1+(.5*padHeight);
+					if(midPad > yPosBall)
 					{
-					// CHANGE TO MODIFY BY BASE SPEED!
-						yVelocBall = yVelocBall - (yVelocBallBase*.7)
-						var negate = 1;
-						if(yVelocBall < 0)
-							negate = -1;
-						if(Math.abs(yVelocBall) > maxYVelocBall)
-							yVelocBall = maxYVelocBall*negate;
-						//Case if ball hits upper third of paddle
+						//Case if ball hits upper half of paddle
+						yVelocBall = yVelocBall - ((midPad-yPosBall)/padHeight)*yVelocBallBase*2.5; // The number at the end (1.2) is a scaling factor to make deflections in the y direction more or less pronounced
 					}
-					else if((yPosPad1+((2/3)*padHeight)) < yPosBall)
+					else if(midPad < yPosBall)
 					{
-						//Case if ball hits lower third of paddle
-						yVelocBall = yVelocBall + (yVelocBallBase*.7)
-						var negate = 1;
-						if(yVelocBall < 0)
-							negate = -1;
-						if(Math.abs(yVelocBall) > maxYVelocBall)
-							yVelocBall = maxYVelocBall*negate;
+						//Case if ball hits lower half of paddle
+						yVelocBall = yVelocBall + ((yPosBall-midPad)/padHeight)*yVelocBallBase*2.5;
 					}
+					// To keep the ball in the y veloc limits
+					var negate = 1;
+					if(yVelocBall < 0)
+						negate = -1;
+					if(Math.abs(yVelocBall) > maxYVelocBall)
+						yVelocBall = maxYVelocBall*negate;
 					// If the ball hits the center of the paddle the y velocity is not modified hence why that case is excluded
 					// xVelocity reflection
 					xVelocBall = -xVelocBall - (xVelocModifier*xVelocBallBase*-1);
@@ -1002,26 +998,23 @@ function detectCollision()
 				if(xVelocBall > 0)
 				{
 					// Paddle velocity modifiers
-					if((yPosPad2+((1/3)*padHeight)) > yPosBall)
+					var midPad = yPosPad2+(.5*padHeight);
+					if(midPad > yPosBall)
 					{
-						yVelocBall = yVelocBall - (yVelocBallBase*.7)
-						var negate = 1;
-						if(yVelocBall < 0)
-							negate = -1;
-						if(Math.abs(yVelocBall) > maxYVelocBall)
-							yVelocBall = maxYVelocBall*negate;
-						//Case if ball hits upper third of paddle
+						//Case if ball hits upper half of paddle
+						yVelocBall = yVelocBall - ((midPad-yPosBall)/padHeight)*yVelocBallBase*2.5; // The number at the end (1.2) is a scaling factor to make deflections in the y direction more or less pronounced
 					}
-					else if((yPosPad2+((2/3)*padHeight)) < yPosBall)
+					else if(midPad < yPosBall)
 					{
-						//Case if ball hits lower third of paddle
-						yVelocBall = yVelocBall + (yVelocBallBase*.7)
-						var negate = 1;
-						if(yVelocBall < 0)
-							negate = -1;
-						if(Math.abs(yVelocBall) > maxYVelocBall)
-							yVelocBall = maxYVelocBall*negate;
+						//Case if ball hits lower half of paddle
+						yVelocBall = yVelocBall + ((yPosBall-midPad)/padHeight)*yVelocBallBase*2.5;
 					}
+					// To keep the ball in the y veloc limits
+					var negate = 1;
+					if(yVelocBall < 0)
+						negate = -1;
+					if(Math.abs(yVelocBall) > maxYVelocBall)
+						yVelocBall = maxYVelocBall*negate;
 					// If the ball hits the center of the paddle the y velocity is not modified hence why that case is excluded
 					// xVelocity reflection
 					xVelocBall = -xVelocBall - (xVelocModifier*xVelocBallBase);
