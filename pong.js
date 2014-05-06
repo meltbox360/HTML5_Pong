@@ -6,9 +6,9 @@ var heightCanvas = 400; // Height of the canvas in pixels - really could be set 
 var widthCanvas = 400; // Width of the canvas in pixels - really could be set to zero, its read in later
 // Between this comment and the 'end' comment all vars should always be 0>=x>=1 since they will later be multiplied by the width or height of the canvas
 var xPosBall = 0; // They x-position of the ball as a fraction of the width of the canvas
-var lastXPosBall = 0; // Stores the last x pos for detecting collisions
+//var lastXPosBall = 0; // Stores the last x pos for detecting collisions
 var yPosBall = 0; // The y-position of the ball as a fraction of the height of the canvas
-var lastYPosBall = 0; // Stores the last y pos for detecting collisions
+//var lastYPosBall = 0; // Stores the last y pos for detecting collisions
 var yVelocBall = 0; // The y-velocity of the ball as a fraction of the height of the canvas
 var yVelocBallBase = 0; // The base y velocity that the ball can return to when reset
 var maxYVelocBall = 0; // The highest xVelocity before no more speed is added per hit
@@ -82,6 +82,10 @@ var justReset = true; // This is used to keep the ball from moving until a playe
 var gamePaused = false; // This will just be used to pause the game, nothing implemented to notify of this at the moment!!!!!
 var displayWin = false; // This is set so that the menu can be invoked to display a win
 var lastScored = 0; // 0 is for start the ball in a random direction (start of game), 1 is for player 1, 2 is for player 2.
+
+// Online Play vars
+var myDataRef = new Firebase('https://flickering-fire-7063.firebaseio.com/'); // Firebase root reference
+var isHost = false; // Set to true if you are the "master" processing data for a given game over firebase
 
 // Wait until the page loads to start running stuff
 // Just good practice
@@ -1284,12 +1288,12 @@ function mainPong()
 {
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
-		if(!displayWin)
+		if(!displayWin) // Since the program will call mainpoing again and come here if menuUp is set we need it to not trigger the main menu
 		{
 			loadMenuBackground();
 			loadMainMenu();
 		}
-		displayWin = false;
+		displayWin = false; // Set it to false so next time it will trigger the main menu loading if menuUp is set
 	}
 	else // Go to the actual game loop
 	{
