@@ -813,16 +813,16 @@ function loadPlayerVsPlayerOnlineMenu()
 				}
 				else
 				{
-					if(!(snap.child('clientJoined')==true))
+					if(!(snap.child('misc').child('clientJoined')==true))
 					{
 						// Set that a client has joined
-						firebaseRef.child(gameID).update(
+						firebaseRef.child(gameID).child('misc').update(
 						{
 						clientJoined: true
 						});
 						isHost = false; // unfortunate heh...
 						// Now we grab the winpoints
-						winPoints = snap.child('winPoints');
+						winPoints = snap.child('misc').child('winPoints');
 						// And then get rid of the menu and get on with the game!
 						menuUp = false;
 					}
@@ -890,27 +890,52 @@ function loadPlayerVsPlayerOnlineMenu()
 				{
 					isHost = true; // Tell it like it is
 					// Now we finally put all the vars into firebase
-					firebaseRef.child(gameID).set(
+					firebaseRef.child(gameID).child('ballVeloc').set(
 					{
-					xVelocBall: 0,
-					yVelocBall: 0,
+					xVelocBall: xVelocBall,
+					yVelocBall: yVelocBall
+					});
+					firebaseRef.child(gameID).child('hostPadLoc').set(
+					{
 					xPosPadHost: xPosPad1,
-					yPosPadHost: yPosPad1,
+					yPosPadHost: yPosPad1
+					});
+					firebaseRef.child(gameID).child('clientPadLoc').set(
+					{
 					xPosPadClient: xPosPad2,
-					yPosPadClient: yPosPad2,
+					yPosPadClient: yPosPad2
+					});
+					firebaseRef.child(gameID).child('ballLoc').set(
+					{
 					xPosBall: xPosBall,
-					yPosBall: yPosBall,
+					yPosBall: yPosBall
+					});
+					firebaseRef.child(gameID).child('hostControls').set(
+					{
+					padHostUp: false,
+					padHostDown: false,
+					padHostLeft: false,
+					padhostRight: false
+					});
+					firebaseRef.child(gameID).child('clientControls').set(
+					{
 					padClientUp: false,
 					padClientDown: false,
 					padClientLeft: false,
-					padClientRight: false,
+					padClientRight: false
+					});
+					firebaseRef.child(gameID).child('gameStatus').set(
+					{
 					lastScored: lastScored,
 					displayWin: displayWin,
 					menuUp: menuUp,
 					gamePaused: gamePaused,
 					justReset: justReset,
 					hostPoints: playerOnePoints,
-					clientPoints: playerTwoPoints,
+					clientPoints: playerTwoPoints
+					});
+					firebaseRef.child(gameID).child('misc').set(
+					{
 					winPoints: winPoints,
 					clientJoined: false
 					}
