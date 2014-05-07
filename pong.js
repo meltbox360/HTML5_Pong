@@ -84,8 +84,11 @@ var displayWin = false; // This is set so that the menu can be invoked to displa
 var lastScored = 0; // 0 is for start the ball in a random direction (start of game), 1 is for player 1, 2 is for player 2.
 
 // Online Play vars
-var myDataRef = new Firebase('https://flickering-fire-7063.firebaseio.com/'); // Firebase root reference
+var firebaseRef = new Firebase('https://flickering-fire-7063.firebaseio.com/'); // Firebase root reference
 var isHost = false; // Set to true if you are the "master" processing data for a given game over firebase
+var cancelOnlineWait = false; // This var is used to cancel waiting for another player
+var gameID = null; // This var holds the reference to our game
+var isFirebaseUpdating = false; // This var can be set to false to stop the farebase updating async
 
 // Wait until the page loads to start running stuff
 // Just good practice
@@ -207,29 +210,35 @@ $(document).keydown(function(event)
 {
 	var keyPressed = event.which; // This should always have the keypress, may have to or with event.keyCode but jquery claims you don't - Just a note
 	// Check for player 1 controls
-	if(keyPressed == keyUpPlayer1)
-		padOneUp = true;
-	if(keyPressed == keyDownPlayer1)
-		padOneDown = true;
-	if(keyPressed == keyLeftPlayer1)
-		padOneLeft = true;
-	if(keyPressed == keyRightPlayer1)
-		padOneRight = true;
+	if((!gameOnline)||(isHost))
+	{
+		if(keyPressed == keyUpPlayer1)
+			padOneUp = true;
+		if(keyPressed == keyDownPlayer1)
+			padOneDown = true;
+		if(keyPressed == keyLeftPlayer1)
+			padOneLeft = true;
+		if(keyPressed == keyRightPlayer1)
+			padOneRight = true;
+		// For pausing using 'p'
+		if(keyPressed == 80)
+			gamePaused = !gamePaused;
+	}
 	// Check for player 2 controls
-	if(keyPressed == keyUpPlayer2)
-		padTwoUp = true;
-	if(keyPressed == keyDownPlayer2)
-		padTwoDown = true;
-	if(keyPressed == keyLeftPlayer2)
-		padTwoLeft = true;
-	if(keyPressed == keyRightPlayer2)
-		padTwoRight = true;
+	if((!gameOnline)||(!isHost))
+	{
+		if(keyPressed == keyUpPlayer2)
+			padTwoUp = true;
+		if(keyPressed == keyDownPlayer2)
+			padTwoDown = true;
+		if(keyPressed == keyLeftPlayer2)
+			padTwoLeft = true;
+		if(keyPressed == keyRightPlayer2)
+			padTwoRight = true;
+	}
 	// Bring up the menu (esc)
-	if(keyPressed == 27)
+	if(keyPressed == 27) // MAKE SURE THAT IN ONLINE PLAY MENUUP LEAVES THE GAME PROPERLY OR SOMETHING, cleanup needs to be implemented anyways, current system baaad
 		menuUp = true;
-	// For pausing using 'p'
-	if(keyPressed == 80)
-		gamePaused = !gamePaused;
 });
 
 // Detect keydowns and update vars.
@@ -237,23 +246,29 @@ $(document).keyup(function(event)
 {
 	var keyReleased = event.which; // This should always have the key that is released, may have to or with event.keyCode but jquery claims you don't - Just a note
 	// Check for player 1 controls
-	if(keyReleased == keyUpPlayer1)
-		padOneUp = false;
-	if(keyReleased == keyDownPlayer1)
-		padOneDown = false;
-	if(keyReleased == keyLeftPlayer1)
-		padOneLeft = false;
-	if(keyReleased == keyRightPlayer1)
-	padOneRight = false;
+	if((!gameOnline)||(isHost))
+	{
+		if(keyReleased == keyUpPlayer1)
+			padOneUp = false;
+		if(keyReleased == keyDownPlayer1)
+			padOneDown = false;
+		if(keyReleased == keyLeftPlayer1)
+			padOneLeft = false;
+		if(keyReleased == keyRightPlayer1)
+		padOneRight = false;
+	}
 	// Check for player 2 controls
-	if(keyReleased == keyUpPlayer2)
-		padTwoUp = false;
-	if(keyReleased == keyDownPlayer2)
-		padTwoDown = false;
-	if(keyReleased == keyLeftPlayer2)
-		padTwoLeft = false;
-	if(keyReleased == keyRightPlayer2)
-		padTwoRight = false;
+	if((!gameOnline)||(!isHost))
+	{
+		if(keyReleased == keyUpPlayer2)
+			padTwoUp = false;
+		if(keyReleased == keyDownPlayer2)
+			padTwoDown = false;
+		if(keyReleased == keyLeftPlayer2)
+			padTwoLeft = false;
+		if(keyReleased == keyRightPlayer2)
+			padTwoRight = false;
+	}
 });
 
 function loadMenuBackground()
@@ -678,18 +693,47 @@ function loadPlayerVsPlayerOnlineMenu()
 	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
 	titleText.appendChild(tempHolder);
 	menuDiv.appendChild(titleText);
-	// Some sort of game browser???? This needs to be thought out
+	// Enter name of game
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Enter game ID: ")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("id", "gameIDInput");
+	tempHolder.setAttribute("value", "");
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
 	// Enter number of points
-	// Start game
-	// Sorry it doesnt work text
-	var applyButton = document.createElement("div");
+	var tempHolder2 = document.createElement("H2");
+	tempHolder2.setAttribute("style", "color:blue; text-align:center");
+	tempHolder = document.createTextNode("Play Until (1-30): ")
+	tempHolder2.appendChild(tempHolder);
+	tempHolder = document.createElement("input");
+	tempHolder.setAttribute("type", "number");
+	tempHolder.setAttribute("id", "pointsInput");
+	tempHolder.setAttribute("min", "1");
+	tempHolder.setAttribute("max", "30");
+	tempHolder.setAttribute("value", 10);
+	tempHolder2.appendChild(tempHolder);
+	menuDiv.appendChild(tempHolder2);
+	// Join Game
+	var joinGameButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
 	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
-	tempHolder.innerHTML = "Not Implemented Yet -- Sorry!";
-	tempHolder.id = "notImplemented"; // So that hover and click events can later be processed.
-	tempHolder.className = "menuOptionNOTTT";
-	applyButton.appendChild(tempHolder);
-	menuDiv.appendChild(applyButton);
+	tempHolder.innerHTML = "Join Game";
+	tempHolder.id = "joinGameButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	joinGameButton.appendChild(tempHolder);
+	menuDiv.appendChild(joinGameButton);
+	// Make game
+	var makeGameButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Make Game";
+	tempHolder.id = "makeGameButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	makeGameButton.appendChild(tempHolder);
+	menuDiv.appendChild(makeGameButton);
 	// Main menu
 	var mainMenuButton = document.createElement("div");
 	tempHolder = document.createElement("H2");
@@ -718,6 +762,231 @@ function loadPlayerVsPlayerOnlineMenu()
 		emptyMenu();
 		loadMainMenu();
 	});
+	// Join Game Button
+	$("#joinGameButton").click(function()
+	{
+		// SETUP THE GAME FIRST!!!!
+		playerOnePoints = 0; // Zero the points
+		playerTwoPoints = 0;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset the paddle positions
+		yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
+		yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+		//VELOCITIES
+		padOneYVeloc = .000002;
+		padOneXVeloc = .0000007;
+		
+		padTwoYVeloc = .000002;
+		padTwoXVeloc = .0000007;
+		
+		yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+		xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+		
+		maxXVelocBall = .000002; // Maximum x velocity
+		maxYVelocBall = .0000025; // Maximum y velocity
+		
+		xVelocModifier = .2; // Fraction of original speed to add per hit
+		// Set game mode
+		gameLocal = false; // Make sure the three states are set up correctly
+		gameVsAi = false;
+		gameOnline = true;
+		// Other state vars
+		lastScored = 0; // To start the ball in a random direction
+		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
+		// Get game ID
+		gameID = document.getElementById("gameIDInput").value;
+		if(gameID == "")
+		{
+			alert("Please enter a game ID");
+		}
+		else
+		{
+			firebaseRef.child(gameID).once('value', function(snap)
+			{
+				if (snap.val() === null)
+				{
+					alert("No game with that ID exists!");
+				}
+				else
+				{
+					if(!(snap.child('clientJoined')==true))
+					{
+						// Set that a client has joined
+						firebaseRef.child(gameID).update(
+						{
+						clientJoined: true
+						});
+						isHost = false; // unfortunate heh...
+						// Now we grab the winpoints
+						winPoints = snap.child('winPoints');
+						// And then get rid of the menu and get on with the game!
+						menuUp = false;
+					}
+					else
+					{
+						alert("Someone has already joined that game!");
+					}
+				}
+			});
+		}
+	});
+	// Make game button
+	$("#makeGameButton").click(function()
+	{
+		// SETUP THE GAME FIRST!!!!
+		playerOnePoints = 0; // Zero the points
+		playerTwoPoints = 0;
+		// Reset the ball
+		xPosBall = .5 - ballRadius*.5; // This and the next line
+		yPosBall = .5 + ballRadius*.5; // are to start the ball in the middle
+		// Reset the paddle positions
+		yPosPad1 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad1 = 0; // Top left corner is at zero, the left edge of the screen
+		yPosPad2 = .5-(1/2)*padHeight; // Top left corner will be at 1/2 of the screen minus half the height of the pad (top left is 0,0)
+		xPosPad2 = 1-padWidth; // xPos will be on the right side of the screen minus the width of the pad so the pad is on the screen
+		//VELOCITIES
+		padOneYVeloc = .000002;
+		padOneXVeloc = .0000007;
+		
+		padTwoYVeloc = .000002;
+		padTwoXVeloc = .0000007;
+		
+		yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
+		xVelocBallBase = .0000004; // X velocity will chosen based off this at the start of a point
+		
+		maxXVelocBall = .000002; // Maximum x velocity
+		maxYVelocBall = .0000025; // Maximum y velocity
+		
+		xVelocModifier = .2; // Fraction of original speed to add per hit
+		// Set game mode
+		gameLocal = false; // Make sure the three states are set up correctly
+		gameVsAi = false;
+		gameOnline = true;
+		// Other state vars
+		lastScored = 0; // To start the ball in a random direction
+		justReset = true; // To make sure the ball doesn't move until someone moves a paddle
+		var tempPoints = parseInt(document.getElementById("pointsInput").value, 10); // Store value to process with limits
+		if(tempPoints > 30)
+			tempPoints = 30;
+		if(tempPoints < 1)
+			tempPoints = 1;
+		winPoints = tempPoints; // Set up the number of points that wins a game
+		gameID = document.getElementById("gameIDInput").value;
+		// Now setup the game in firebase
+		cancelOnlineWait = false; // Make sure that the waiting screen isn't insta canceled
+		if(gameID == "")
+		{
+			alert("Please enter a game ID");
+		}
+		else
+		{
+			firebaseRef.child(gameID).once('value', function(snapshot)
+			{
+				if (snapshot.val() === null)
+				{
+					isHost = true; // Tell it like it is
+					// Now we finally put all the vars into firebase
+					firebaseRef.child(gameID).set(
+					{
+					xVelocBall: 0,
+					yVelocBall: 0,
+					xPosPadHost: xPosPad1,
+					yPosPadHost: yPosPad1,
+					xPosPadClient: xPosPad2,
+					yPosPadClient: yPosPad2,
+					xPosBall: xPosBall,
+					yPosBall: yPosBall,
+					padClientUp: false,
+					padClientDown: false,
+					padClientLeft: false,
+					padClientRight: false,
+					lastScored: lastScored,
+					displayWin: displayWin,
+					menuUp: menuUp,
+					gamePaused: gamePaused,
+					justReset: justReset,
+					hostPoints: playerOnePoints,
+					clientPoints: playerTwoPoints,
+					winPoints: winPoints,
+					clientJoined: false
+					}
+					);
+					// Done putting everything into firebase
+					emptyMenu();
+					// Setup title
+					var titleText = document.createElement("div");
+					var tempHolder = document.createElement("H1");
+					tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+					tempHolder.innerHTML = "Waiting for player";
+					titleText.appendChild(tempHolder);
+					tempHolder = document.createElement("hr");
+					tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+					titleText.appendChild(tempHolder);
+					menuDiv.appendChild(titleText);
+					// Cancel
+					var mainMenuButton = document.createElement("div");
+					tempHolder = document.createElement("H2");
+					tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+					tempHolder.innerHTML = "Cancel";
+					tempHolder.id = "cancelButton"; // So that hover and click events can later be processed.
+					tempHolder.className = "menuOption";
+					mainMenuButton.appendChild(tempHolder);
+					menuDiv.appendChild(mainMenuButton);
+					// Button hover handlers
+					$(".menuOption").hover(function()
+					{
+						// Mouse enter animation
+						$(this).stop().fadeOut(100,function(){
+						$(this).css("color", "red");
+						$(this).fadeIn(100);});
+					},function()
+					{
+						$(this).stop().fadeIn(100);
+						$(this).css("color", "blue");		
+					});
+					// Button click handlers
+					// Cancel button
+					$("#cancelButton").click(function()
+					{
+						cancelOnlineWait = true;
+						emptyMenu();
+						loadPlayerVsPlayerOnlineMenu();
+					});
+					waitForJoin(); // This function will set menuUp to false and start the game when someone joins.
+				}
+				else
+				{
+					alert("A game with that ID already exists!");
+				}
+			});
+		}
+	});
+}
+
+function waitForJoin()
+{
+	if(!cancelOnlineWait)
+	{
+		firebaseRef.child(gameID).once('value', function(snap)
+		{
+			if(snap.child('clientJoined').val() == true) // If someone joined get rid of the menu and get to the game!
+			{
+				menuUp = false;
+			}
+			else // Otherwise sit around and run this fucntion until someone joins or its canceled
+			{
+				setTimeout(function(){waitForJoin()}, 50);
+			}	
+		});
+	}
+	else
+	{
+		isHost = false; // Well damn son, it was good while it lasted
+	}
 }
 
 // Code related to settings menu
@@ -1113,7 +1382,7 @@ function positionUpdate()
 		xPosPad1 -= padOneXVeloc*widthCanvas*deltaTime; // To the left if negative
 	}
 	// Update second player's paddle position
-	if(gameLocal)
+	if(gameLocal||gameOnline)
 	{
 		if(padTwoUp)
 		{
@@ -1284,10 +1553,79 @@ function framePacing()
 	setTimeout(function(){mainPong()}, 5); // Need some sort of thing like this otherwise the webpage freezes as javascript running takes prescedence over other things.
 }
 
+function firebaseHostIO()
+{
+	if(isFireBaseUpdating)
+	{
+		firebaseRef.child(gameID).update(
+		{
+		xVelocBall: xVelocBall,
+		yVelocBall: yVelocBall,
+		xPosPadHost: xPosPad1,
+		yPosPadHost: yPosPad1,
+		xPosPadClient: xPosPad2,
+		yPosPadClient: yPosPad2,
+		xPosBall: xPosBall,
+		yPosBall: yPosBall,
+		lastScored: lastScored,
+		displayWin: displayWin,
+		menuUp: menuUp,
+		gamePaused: gamePaused,
+		justReset: justReset,
+		hostPoints: playerOnePoints,
+		clientPoints: playerTwoPoints
+		});
+		firebaseRef.child(gameID).once('value', function(snap)
+		{
+			padTwoUp = snap.child('padClientUp').val();
+			padTwoDown = snap.child('padClientDown').val();
+			padTwoLeft = snap.child('padClientLeft').val();
+			padTwoRight = snap.child('padClientRight').val();
+		});
+		setTimeout(function(){firebaseHostIO()}, 30); // Should be a little more than 30 fps... this affects lag. Gotta do this better later
+	}
+	// Otherwise this function stops running
+}
+
+function firebaseClientIO()
+{
+	if(isFireBaseUpdating)
+	{
+		firebaseRef.child(gameID).update(
+		{
+		padClientUp: padTwoUp,
+		padClientDown: padTwoDown,
+		padClientLeft: padTwoLeft,
+		padClientRight: padTwoRight
+		});
+		firebaseRef.child(gameID).once('value', function(snap)
+		{
+			xVelocBall = snap.child('xVelocBall').val();
+			yVelocBall = snap.child('yVelocBall').val();
+			xPosPad1 = snap.child('xPosPadHost').val();
+			yPosPad1 = snap.child('yPosPadHost').val();
+			xPosPad2 = snap.child('xPosPadClient').val();
+			yPosPad2 = snap.child('yPosPadClient').val();
+			xPosBall = snap.child('xPosBall').val();
+			yPosBall = snap.child('yPosBall').val();
+			lastScored = snap.child('lastScored').val();
+			displayWin = snap.child('displayWin').val();
+			menuUp = snap.child('menuUp').val();
+			gamePaused = snap.child('gamePaused').val();
+			justReset = snap.child('justReset').val();
+			hostPoints = snap.child('playerOnePoints').val();
+			clientPoints = snap.child('playerTwoPoints').val();
+		});
+		setTimeout(function(){firebaseClientIO()}, 30);
+	}
+	// Otherwise this function stops running
+}
+
 function mainPong()
 {
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
+		isFireBaseUpdating = false;
 		if(!displayWin) // Since the program will call mainpoing again and come here if menuUp is set we need it to not trigger the main menu
 		{
 			loadMenuBackground();
@@ -1297,6 +1635,26 @@ function mainPong()
 	}
 	else // Go to the actual game loop
 	{
+		// Start online updating so pauses don't effect
+		if(gameOnline) // Extra code to keep both sides in sync in online play
+		{
+			if(isHost)
+			{
+				if(!isFireBaseUpdating)
+				{
+					isFireBaseUpdating = true;
+					firebaseHostIO();
+				}
+			}
+			else
+			{
+				if(!isFireBaseUpdating)
+				{
+					isFireBaseUpdating = true;
+					firebaseClientIO();
+				}
+			}
+		}
 		// Render everything to the screen, this can happen every cycle
 		renderPong();
 		if(justReset || gamePaused) // The paused is just thrown in since it works
@@ -1309,8 +1667,20 @@ function mainPong()
 			positionUpdate();
 			// Detect collisions and update positions and velocities based off collisions
 			detectCollision();
-			// Update score if the ball is off on one side and then reset everything, so on so forth
-			detectPoint();
+			if(gameOnline) // Extra code to keep both sides in sync in online play
+			{
+				if(isHost)
+				{
+					// Update score if the ball is off on one side and then reset everything, so on so forth
+					detectPoint();
+				}
+			}
+			else
+			{
+				// We only want the host to process in online mode, this code here runs normally in offline mode
+				// Update score if the ball is off on one side and then reset everything, so on so forth
+				detectPoint();
+			}
 		}
 		// Make sure that timing is correct and that the page remains responsive with 'sleeps' can run every cycle
 		framePacing();
