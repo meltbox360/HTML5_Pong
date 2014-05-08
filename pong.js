@@ -213,32 +213,72 @@ $(document).keydown(function(event)
 	if((!gameOnline)||(isHost))
 	{
 		if(keyPressed == keyUpPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostUp').update(true);
 			padOneUp = true;
+		}
 		if(keyPressed == keyDownPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostDown').update(true);
 			padOneDown = true;
+		}
 		if(keyPressed == keyLeftPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostLeft').update(true);
 			padOneLeft = true;
+		}
 		if(keyPressed == keyRightPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostRight').update(true);
 			padOneRight = true;
+		}
 		// For pausing using 'p'
 		if(keyPressed == 80)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('gameStatus').child('gamePaused').update(!gamePaused);
 			gamePaused = !gamePaused;
+		}
 	}
 	// Check for player 2 controls
 	if((!gameOnline)||(!isHost))
 	{
 		if(keyPressed == keyUpPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientUp').update(true);
 			padTwoUp = true;
+		}
 		if(keyPressed == keyDownPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientDown').update(true);
 			padTwoDown = true;
+		}
 		if(keyPressed == keyLeftPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientLeft').update(true);
 			padTwoLeft = true;
+		}
 		if(keyPressed == keyRightPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientRight').update(true);
 			padTwoRight = true;
+		}
 	}
 	// Bring up the menu (esc)
 	if(keyPressed == 27) // MAKE SURE THAT IN ONLINE PLAY MENUUP LEAVES THE GAME PROPERLY OR SOMETHING, cleanup needs to be implemented anyways, current system baaad
+	{
+		if(gameOnline)
+				firebaseRef.child(gameID).child('gameStatus').child('menuUp').update(true);
 		menuUp = true;
+	}
 });
 
 // Detect keydowns and update vars.
@@ -249,25 +289,57 @@ $(document).keyup(function(event)
 	if((!gameOnline)||(isHost))
 	{
 		if(keyReleased == keyUpPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostUp').update(false);
 			padOneUp = false;
+		}
 		if(keyReleased == keyDownPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostDown').update(false);
 			padOneDown = false;
+		}
 		if(keyReleased == keyLeftPlayer1)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostLeft').update(false);
 			padOneLeft = false;
+		}
 		if(keyReleased == keyRightPlayer1)
-		padOneRight = false;
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('hostControls').child('padHostRight').update(false);
+			padOneRight = false;
+		}
 	}
 	// Check for player 2 controls
 	if((!gameOnline)||(!isHost))
 	{
 		if(keyReleased == keyUpPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientUp').update(false);
 			padTwoUp = false;
+		}
 		if(keyReleased == keyDownPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientDown').update(false);
 			padTwoDown = false;
+		}
 		if(keyReleased == keyLeftPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientLeft').update(false);
 			padTwoLeft = false;
+		}
 		if(keyReleased == keyRightPlayer2)
+		{
+			if(gameOnline)
+				firebaseRef.child(gameID).child('clientControls').child('padClientRight').update(false);
 			padTwoRight = false;
+		}
 	}
 });
 
@@ -503,7 +575,7 @@ function loadSinglePlayerMenu()
 			padOneYVeloc = .000002;
 			padOneXVeloc = .0000007;
 			
-			padTwoYVeloc = .000001;
+			padTwoYVeloc = .0000008;
 			padTwoXVeloc = .00000035;
 			
 			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
@@ -522,7 +594,7 @@ function loadSinglePlayerMenu()
 			padOneYVeloc = .000002;
 			padOneXVeloc = .0000007;
 			
-			padTwoYVeloc = .0000015;
+			padTwoYVeloc = .0000013;
 			padTwoXVeloc = .0000007;
 			
 			yVelocBallBase = .0000005; // Y velocity will chosen based off this at the start of a point
@@ -1461,59 +1533,86 @@ function detectPoint()
 	}
 	if((playerOnePoints == winPoints)||(playerTwoPoints == winPoints))
 	{
-		var winText;
-		if(playerOnePoints == winPoints)
-			winText = "Player 1 Wins!";
-		else
-		{
-			if(gameVsAi)
-				winText = "AI Wins!";
-			else
-				winText = "Player 2 Wins!";
-		}
-		// Resets should happen when you start a game from the menu so you can skip it here
-		menuUp = true; //Set this or you will be running the game loop pointlessly, bad things will happen!
 		displayWin = true;
-		loadMenuBackground();
-		// Setup title
-		var titleText = document.createElement("div");
-		var tempHolder = document.createElement("H1");
-		tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
-		tempHolder.innerHTML = winText;
-		titleText.appendChild(tempHolder);
-		tempHolder = document.createElement("hr");
-		tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
-		titleText.appendChild(tempHolder);
-		menuDiv.appendChild(titleText);
-		// Main menu
-		var mainMenuButton = document.createElement("div");
-		tempHolder = document.createElement("H2");
-		tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
-		tempHolder.innerHTML = "Main Menu";
-		tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
-		tempHolder.className = "menuOption";
-		mainMenuButton.appendChild(tempHolder);
-		menuDiv.appendChild(mainMenuButton);
-		// Button hover handlers
-		$(".menuOption").hover(function()
+		menuUp = true;
+	}
+	// Now upload everything to firebase so that the client can be notified and recieve it.
+	if(gameOnline)
+	{
+		firebaseRef.child(gameID).child('ballLoc').update(
 		{
-			// Mouse enter animation
-			$(this).stop().fadeOut(100,function(){
-			$(this).css("color", "red");
-			$(this).fadeIn(100);});
-		},function()
-		{
-			$(this).stop().fadeIn(100);
-			$(this).css("color", "blue");		
+		xPosBall: xPosBall,
+		yPosBall: yPosBall
 		});
-		// Button click handlers
-		// Main menu button
-		$("#mainMenuButton").click(function()
+		firebaseRef.child(gameID).child('ballVeloc').update(
 		{
-			emptyMenu();
-			loadMainMenu();
+		xVelocBall: xVelocBall,
+		yVelocBall: yVelocBall
+		});
+		firebaseRef.child(gameID).child('gameStatus').update(
+		{
+		lastScored: lastScored,
+		//displayWin: displayWin, //Not needed reenable when I fgure out how to make this show up for the client. Or rewrite the code a bit.
+		menuUp: menuUp,
+		justReset: justReset,
+		hostPoints: playerOnePoints,
+		clientPoints: playerTwoPoints
 		});
 	}
+}
+
+function loadWinMenu()
+{
+	var winText;
+	if(playerOnePoints == winPoints)
+		winText = "Player 1 Wins!";
+	else
+	{
+		if(gameVsAi)
+			winText = "AI Wins!";
+		else
+			winText = "Player 2 Wins!";
+	}
+	// Resets should happen when you start a game from the menu so you can skip it here
+	loadMenuBackground();
+	// Setup title
+	var titleText = document.createElement("div");
+	var tempHolder = document.createElement("H1");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = winText;
+	titleText.appendChild(tempHolder);
+	tempHolder = document.createElement("hr");
+	tempHolder.setAttribute("style", "border-color:blue; width:" + widthCanvas*(2/3) + "px;");
+	titleText.appendChild(tempHolder);
+	menuDiv.appendChild(titleText);
+	// Main menu
+	var mainMenuButton = document.createElement("div");
+	tempHolder = document.createElement("H2");
+	tempHolder.setAttribute("style", "font-family:\"Georgia Bold\"; text-align:center; color:blue;");
+	tempHolder.innerHTML = "Main Menu";
+	tempHolder.id = "mainMenuButton"; // So that hover and click events can later be processed.
+	tempHolder.className = "menuOption";
+	mainMenuButton.appendChild(tempHolder);
+	menuDiv.appendChild(mainMenuButton);
+	// Button hover handlers
+	$(".menuOption").hover(function()
+	{
+		// Mouse enter animation
+		$(this).stop().fadeOut(100,function(){
+		$(this).css("color", "red");
+		$(this).fadeIn(100);});
+	},function()
+	{
+		$(this).stop().fadeIn(100);
+		$(this).css("color", "blue");		
+	});
+	// Button click handlers
+	// Main menu button
+	$("#mainMenuButton").click(function()
+	{
+		emptyMenu();
+		loadMainMenu();
+	});
 }
 
 function waitUntilPlayerAction()
@@ -1582,32 +1681,22 @@ function firebaseHostIO()
 {
 	if(isFireBaseUpdating)
 	{
-		firebaseRef.child(gameID).update(
+		firebaseRef.child(gameID).child('ballVeloc').update(
 		{
 		xVelocBall: xVelocBall,
-		yVelocBall: yVelocBall,
-		xPosPadHost: xPosPad1,
-		yPosPadHost: yPosPad1,
-		xPosPadClient: xPosPad2,
-		yPosPadClient: yPosPad2,
-		xPosBall: xPosBall,
-		yPosBall: yPosBall,
-		lastScored: lastScored,
-		displayWin: displayWin,
-		menuUp: menuUp,
-		gamePaused: gamePaused,
-		justReset: justReset,
-		hostPoints: playerOnePoints,
-		clientPoints: playerTwoPoints
+		yVelocBall: yVelocBall
 		});
-		firebaseRef.child(gameID).once('value', function(snap)
+		firebaseRef.child(gameID).child('hostPadLoc').update(
 		{
-			padTwoUp = snap.child('padClientUp').val();
-			padTwoDown = snap.child('padClientDown').val();
-			padTwoLeft = snap.child('padClientLeft').val();
-			padTwoRight = snap.child('padClientRight').val();
+		xPosPadHost: xPosPad1,
+		yPosPadHost: yPosPad1
 		});
-		setTimeout(function(){firebaseHostIO()}, 30); // Should be a little more than 30 fps... this affects lag. Gotta do this better later
+		firebaseRef.child(gameID).child('ballLoc').update(
+		{
+		xPosBall: xPosBall,
+		yPosBall: yPosBall
+		});
+		setTimeout(function(){firebaseHostIO()}, 100); // Tune the interval
 	}
 	// Otherwise this function stops running
 }
@@ -1616,32 +1705,13 @@ function firebaseClientIO()
 {
 	if(isFireBaseUpdating)
 	{
-		firebaseRef.child(gameID).update(
+		// Update everything that needs to be updated periodically
+		firebaseRef.child(gameID).child('clientPadLoc').update(
 		{
-		padClientUp: padTwoUp,
-		padClientDown: padTwoDown,
-		padClientLeft: padTwoLeft,
-		padClientRight: padTwoRight
+		xPosPadClient: xPosPad2,
+		yPosPadClient: yPosPad2
 		});
-		firebaseRef.child(gameID).once('value', function(snap)
-		{
-			xVelocBall = snap.child('xVelocBall').val();
-			yVelocBall = snap.child('yVelocBall').val();
-			xPosPad1 = snap.child('xPosPadHost').val();
-			yPosPad1 = snap.child('yPosPadHost').val();
-			xPosPad2 = snap.child('xPosPadClient').val();
-			yPosPad2 = snap.child('yPosPadClient').val();
-			xPosBall = snap.child('xPosBall').val();
-			yPosBall = snap.child('yPosBall').val();
-			lastScored = snap.child('lastScored').val();
-			displayWin = snap.child('displayWin').val();
-			menuUp = snap.child('menuUp').val();
-			gamePaused = snap.child('gamePaused').val();
-			justReset = snap.child('justReset').val();
-			hostPoints = snap.child('playerOnePoints').val();
-			clientPoints = snap.child('playerTwoPoints').val();
-		});
-		setTimeout(function(){firebaseClientIO()}, 30);
+		setTimeout(function(){firebaseClientIO()}, 100); // Tune the interval
 	}
 	// Otherwise this function stops running
 }
@@ -1650,34 +1720,36 @@ function mainPong()
 {
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
-		isFireBaseUpdating = false;
+		isFireBaseUpdating = false; // To make the async updates stop (see firebaseHostIO() and firebaseClientIO())
 		if(!displayWin) // Since the program will call mainpoing again and come here if menuUp is set we need it to not trigger the main menu
 		{
 			loadMenuBackground();
 			loadMainMenu();
 		}
-		displayWin = false; // Set it to false so next time it will trigger the main menu loading if menuUp is set
+		else
+		{
+			loadWinMenu(); // Loads the screen which says who won
+			displayWin = false; // Set it to false so next time it will trigger the main menu loading if menuUp is set
+		}
 	}
 	else // Go to the actual game loop
 	{
 		// Start online updating so pauses don't effect
-		if(gameOnline) // Extra code to keep both sides in sync in online play
+		if(gameOnline&&!isFireBaseUpdating) // Extra code to keep both sides in sync in online play
 		{
 			if(isHost)
 			{
-				if(!isFireBaseUpdating)
-				{
-					isFireBaseUpdating = true;
-					firebaseHostIO();
-				}
+				// To activate the firebase periodic updating
+				isFireBaseUpdating = true;
+				firebaseHostIO();
+				// Now for the callbacks
 			}
 			else
 			{
-				if(!isFireBaseUpdating)
-				{
-					isFireBaseUpdating = true;
-					firebaseClientIO();
-				}
+				// To activate the firebase periodic updating
+				isFireBaseUpdating = true;
+				firebaseClientIO();
+				// Now for the callbacks
 			}
 		}
 		// Render everything to the screen, this can happen every cycle
