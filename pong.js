@@ -1379,6 +1379,8 @@ function detectCollision()
 						xVelocBall = maxXVelocBall;
 					// Now reflect the ball
 					xPosBall = 2*xPosPad1 + 2*padWidth - xPosBall + 2*ballRadius; // Do not question took a while to calculate, technicly wrong due to new y veloc modifiers...
+					if(padOneRight&&(padOneXVeloc > xVelocBall))
+						xVelocBall = padOneXVeloc;
 				}
 				else if(xVelocBall > 0)
 				{
@@ -1419,6 +1421,8 @@ function detectCollision()
 						xVelocBall = maxXVelocBall*-1;
 					// Now reflect the ball
 					xPosBall = 2*xPosPad2 - xPosBall - 2*ballRadius; // Don't question, took a while to calculate....
+					if(padTwoLeft&&(padTwoXVeloc > Math.abs(xVelocBall)))
+						xVelocBall = -padTwoXVeloc;
 				}
 				else if(xVelocBall < 0)
 				{
@@ -1709,7 +1713,7 @@ function firebaseHostIO()
 		xPosBall: xPosBall,
 		yPosBall: yPosBall
 		});
-		setTimeout(function(){firebaseHostIO()}, 100); // Tune the interval
+		setTimeout(function(){firebaseHostIO()}, 50); // Tune the interval
 	}
 	// Otherwise this function stops running
 }
@@ -1724,7 +1728,7 @@ function firebaseClientIO()
 		xPosPadClient: xPosPad2,
 		yPosPadClient: yPosPad2
 		});
-		setTimeout(function(){firebaseClientIO()}, 100); // Tune the interval
+		setTimeout(function(){firebaseClientIO()}, 50); // Tune the interval
 	}
 	// Otherwise this function stops running
 }
