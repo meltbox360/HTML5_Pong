@@ -1761,7 +1761,7 @@ function mainPong()
 				firebaseHostIO();
 				// Now for the callbacks
 				// Callback for client anti lag pad position
-				firebaseRef.child(gameID).child('clientPadLoc').on('value', function(snap)
+				firebaseRef.child(gameID).child('clientPadLoc').on('child_changed', function(snap)
 				{
 					xPosPad2 = snap.child('xPosPadClient').val();
 					yPosPad2 = snap.child('yPosPadClient').val();
@@ -1783,6 +1783,11 @@ function mainPong()
 				{
 					padTwoRight = snap.val();
 				});
+				//Callback for game status stuff
+				firebaseRef.child(gameID).child('gameStatus').child('menuUp').on('value', function(snap)
+				{
+					menuUp = snap.val();
+				});
 			}
 			else
 			{
@@ -1791,19 +1796,19 @@ function mainPong()
 				firebaseClientIO();
 				// Now for the callbacks
 				// Callback for ball velocity antilag
-				firebaseRef.child(gameID).child('ballVeloc').on('value', function(snap)
+				firebaseRef.child(gameID).child('ballVeloc').on('child_changed', function(snap)
 				{
 					xVelocBall = snap.child('xVelocBall');
 					yVelocBall = snap.child('yVelocBall');
 				});
 				// Callback for host pad antilag
-				firebaseRef.child(gameID).child('hostPadLoc').on('value', function(snap)
+				firebaseRef.child(gameID).child('hostPadLoc').on('child_changed', function(snap)
 				{
 					xPosPad1 = snap.child('xPosPadHost').val();
 					yPosPad1 = snap.child('yPosPadHost').val();
 				});
 				// Callback for ball position antilag
-				firebaseRef.child(gameID).child('ballLoc').on('value', function(snap)
+				firebaseRef.child(gameID).child('ballLoc').on('child_changed', function(snap)
 				{
 					xPosBall = snap.child('xPosBall').val();
 					yPosBall = snap.child('yPosBall').val();
@@ -1826,7 +1831,7 @@ function mainPong()
 					padOneRight = snap.val();
 				});
 				//Callback for game status stuff
-				firebaseRef.child(gameID).child('gameStatus').on('value', function(snap)
+				firebaseRef.child(gameID).child('gameStatus').on('child_changed', function(snap)
 				{
 					lastScored = snap.child('lastScored').val();
 					displayWin = snap.child('displayWin').val();
