@@ -1738,6 +1738,7 @@ function mainPong()
 	if(menuUp == true) // Run the code which pulls up the menu and then just sit around until the menu goes away and menuUp is set false.
 	{
 		isFireBaseUpdating = false; // To make the async updates stop (see firebaseHostIO() and firebaseClientIO())
+		firebaseRef.off(); // Remove all callbacks
 		if(!displayWin) // Since the program will call mainpoing again and come here if menuUp is set we need it to not trigger the main menu
 		{
 			loadMenuBackground();
@@ -1761,7 +1762,7 @@ function mainPong()
 				firebaseHostIO();
 				// Now for the callbacks
 				// Callback for client anti lag pad position
-				firebaseRef.child(gameID).child('clientPadLoc').on('child_changed', function(snap)
+				firebaseRef.child(gameID).child('clientPadLoc').on('value', function(snap)
 				{
 					xPosPad2 = snap.child('xPosPadClient').val();
 					yPosPad2 = snap.child('yPosPadClient').val();
@@ -1796,19 +1797,19 @@ function mainPong()
 				firebaseClientIO();
 				// Now for the callbacks
 				// Callback for ball velocity antilag
-				firebaseRef.child(gameID).child('ballVeloc').on('child_changed', function(snap)
+				firebaseRef.child(gameID).child('ballVeloc').on('value', function(snap)
 				{
 					xVelocBall = snap.child('xVelocBall');
 					yVelocBall = snap.child('yVelocBall');
 				});
 				// Callback for host pad antilag
-				firebaseRef.child(gameID).child('hostPadLoc').on('child_changed', function(snap)
+				firebaseRef.child(gameID).child('hostPadLoc').on('value', function(snap)
 				{
 					xPosPad1 = snap.child('xPosPadHost').val();
 					yPosPad1 = snap.child('yPosPadHost').val();
 				});
 				// Callback for ball position antilag
-				firebaseRef.child(gameID).child('ballLoc').on('child_changed', function(snap)
+				firebaseRef.child(gameID).child('ballLoc').on('value', function(snap)
 				{
 					xPosBall = snap.child('xPosBall').val();
 					yPosBall = snap.child('yPosBall').val();
@@ -1831,7 +1832,7 @@ function mainPong()
 					padOneRight = snap.val();
 				});
 				//Callback for game status stuff
-				firebaseRef.child(gameID).child('gameStatus').on('child_changed', function(snap)
+				firebaseRef.child(gameID).child('gameStatus').on('value', function(snap)
 				{
 					lastScored = snap.child('lastScored').val();
 					displayWin = snap.child('displayWin').val();
