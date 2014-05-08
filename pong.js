@@ -214,69 +214,76 @@ $(document).keydown(function(event)
 	{
 		if(keyPressed == keyUpPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostUp').update(true);
 			padOneUp = true;
 		}
 		if(keyPressed == keyDownPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostDown').update(true);
 			padOneDown = true;
 		}
 		if(keyPressed == keyLeftPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostLeft').update(true);
 			padOneLeft = true;
 		}
 		if(keyPressed == keyRightPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostRight').update(true);
 			padOneRight = true;
 		}
 		// For pausing using 'p'
 		if(keyPressed == 80)
 		{
 			if(gameOnline)
-				firebaseRef.child(gameID).child('gameStatus').child('gamePaused').update(!gamePaused);
+				firebaseRef.child(gameID).child('gameStatus').update({gamePaused: !gamePaused});
 			gamePaused = !gamePaused;
 		}
+		//Update all the positions
+		if(gameOnline)
+		{
+			firebaseRef.child(gameID).child('hostControls').update(
+			{
+			padHostUp: padOneUp,
+			padHostDown: padOneDown,
+			padHostLeft: padOneLeft,
+			padHostRight: padOneRight
+			});
+		}
+
 	}
 	// Check for player 2 controls
 	if((!gameOnline)||(!isHost))
 	{
 		if(keyPressed == keyUpPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientUp').update(true);
 			padTwoUp = true;
 		}
 		if(keyPressed == keyDownPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientDown').update(true);
 			padTwoDown = true;
 		}
 		if(keyPressed == keyLeftPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientLeft').update(true);
 			padTwoLeft = true;
 		}
 		if(keyPressed == keyRightPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientRight').update(true);
 			padTwoRight = true;
+		}
+		//Update all the positions
+		if(gameOnline)
+		{
+			firebaseRef.child(gameID).child('clientControls').update(
+			{
+			padClientUp: padTwoUp,
+			padClientDown: padTwoDown,
+			padClientLeft: padTwoLeft,
+			padClientRight: padTwoRight
+			});
 		}
 	}
 	// Bring up the menu (esc)
 	if(keyPressed == 27) // MAKE SURE THAT IN ONLINE PLAY MENUUP LEAVES THE GAME PROPERLY OR SOMETHING, cleanup needs to be implemented anyways, current system baaad
 	{
 		if(gameOnline)
-				firebaseRef.child(gameID).child('gameStatus').child('menuUp').update(true);
+				firebaseRef.child(gameID).child('gameStatus').update({menuUp: true});
 		menuUp = true;
 	}
 });
@@ -290,27 +297,30 @@ $(document).keyup(function(event)
 	{
 		if(keyReleased == keyUpPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostUp').update(false);
 			padOneUp = false;
 		}
 		if(keyReleased == keyDownPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostDown').update(false);
 			padOneDown = false;
 		}
 		if(keyReleased == keyLeftPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostLeft').update(false);
 			padOneLeft = false;
 		}
 		if(keyReleased == keyRightPlayer1)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('hostControls').child('padHostRight').update(false);
 			padOneRight = false;
+		}
+		// Update the status in firebase
+		if(gameOnline)
+		{
+			firebaseRef.child(gameID).child('hostControls').update(
+			{
+			padHostUp: padOneUp,
+			padHostDown: padOneDown,
+			padHostLeft: padOneLeft,
+			padHostRight: padOneRight,
+			});
 		}
 	}
 	// Check for player 2 controls
@@ -318,27 +328,30 @@ $(document).keyup(function(event)
 	{
 		if(keyReleased == keyUpPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientUp').update(false);
 			padTwoUp = false;
 		}
 		if(keyReleased == keyDownPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientDown').update(false);
 			padTwoDown = false;
 		}
 		if(keyReleased == keyLeftPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientLeft').update(false);
 			padTwoLeft = false;
 		}
 		if(keyReleased == keyRightPlayer2)
 		{
-			if(gameOnline)
-				firebaseRef.child(gameID).child('clientControls').child('padClientRight').update(false);
 			padTwoRight = false;
+		}
+		// Update the status in firebase
+		if(gameOnline)
+		{
+			firebaseRef.child(gameID).child('clientControls').update(
+			{
+			padClientUp: padTwoUp,
+			padClientDown: padTwoDown,
+			padClientLeft: padTwoLeft,
+			padClientRight: padTwoRight,
+			});
 		}
 	}
 });
@@ -885,7 +898,7 @@ function loadPlayerVsPlayerOnlineMenu()
 				}
 				else
 				{
-					if(!(snap.child('misc').child('clientJoined')==true))
+					if(!(snap.child('misc').child('clientJoined').val()==true))
 					{
 						// Set that a client has joined
 						firebaseRef.child(gameID).child('misc').update(
@@ -1000,7 +1013,7 @@ function loadPlayerVsPlayerOnlineMenu()
 					{
 					lastScored: lastScored,
 					displayWin: displayWin,
-					menuUp: menuUp,
+					menuUp: false,// HAS TO BE FALSE OR CLIENT INSTA GOES TO MENU ON CONNECT!!!!
 					gamePaused: gamePaused,
 					justReset: justReset,
 					hostPoints: playerOnePoints,
@@ -1070,7 +1083,7 @@ function waitForJoin()
 	{
 		firebaseRef.child(gameID).once('value', function(snap)
 		{
-			if(snap.child('clientJoined').val() == true) // If someone joined get rid of the menu and get to the game!
+			if(snap.child('misc').child('clientJoined').val() == true) // If someone joined get rid of the menu and get to the game!
 			{
 				menuUp = false;
 			}
@@ -1552,7 +1565,7 @@ function detectPoint()
 		firebaseRef.child(gameID).child('gameStatus').update(
 		{
 		lastScored: lastScored,
-		//displayWin: displayWin, //Not needed reenable when I fgure out how to make this show up for the client. Or rewrite the code a bit.
+		displayWin: displayWin,
 		menuUp: menuUp,
 		justReset: justReset,
 		hostPoints: playerOnePoints,
@@ -1743,6 +1756,29 @@ function mainPong()
 				isFireBaseUpdating = true;
 				firebaseHostIO();
 				// Now for the callbacks
+				// Callback for client anti lag pad position
+				firebaseRef.child(gameID).child('clientPadLoc').on('value', function(snap)
+				{
+					xPosPad2 = snap.child('xPosPadClient').val();
+					yPosPad2 = snap.child('yPosPadClient').val();
+				});
+				// Callbacks for cliet pad controls
+				firebaseRef.child(gameID).child('clientControls').child('padClientUp').on('value', function(snap)
+				{
+					padTwoUp = snap.val();
+				});
+				firebaseRef.child(gameID).child('clientControls').child('padClientDown').on('value', function(snap)
+				{
+					padTwoDown = snap.val();
+				});
+				firebaseRef.child(gameID).child('clientControls').child('padClientLeft').on('value', function(snap)
+				{
+					padTwoLeft = snap.val();
+				});
+				firebaseRef.child(gameID).child('clientControls').child('padClientRight').on('value', function(snap)
+				{
+					padTwoRight = snap.val();
+				});
 			}
 			else
 			{
@@ -1750,6 +1786,52 @@ function mainPong()
 				isFireBaseUpdating = true;
 				firebaseClientIO();
 				// Now for the callbacks
+				// Callback for ball velocity antilag
+				firebaseRef.child(gameID).child('ballVeloc').on('value', function(snap)
+				{
+					xVelocBall = snap.child('xVelocBall');
+					yVelocBall = snap.child('yVelocBall');
+				});
+				// Callback for host pad antilag
+				firebaseRef.child(gameID).child('hostPadLoc').on('value', function(snap)
+				{
+					xPosPad1 = snap.child('xPosPadHost').val();
+					yPosPad1 = snap.child('yPosPadHost').val();
+				});
+				// Callback for ball position antilag
+				firebaseRef.child(gameID).child('ballLoc').on('value', function(snap)
+				{
+					xPosBall = snap.child('xPosBall').val();
+					yPosBall = snap.child('yPosBall').val();
+				});
+				// Callbacks for host pad controls
+				firebaseRef.child(gameID).child('hostControls').child('padHostUp').on('value', function(snap)
+				{
+					padOneUp = snap.val();
+				});
+				firebaseRef.child(gameID).child('hostControls').child('padHostDown').on('value', function(snap)
+				{
+					padOneDown = snap.val();
+				});
+				firebaseRef.child(gameID).child('hostControls').child('padHostLeft').on('value', function(snap)
+				{
+					padOneLeft = snap.val();
+				});
+				firebaseRef.child(gameID).child('hostControls').child('padHostRight').on('value', function(snap)
+				{
+					padOneRight = snap.val();
+				});
+				//Callback for game status stuff
+				firebaseRef.child(gameID).child('gameStatus').on('value', function(snap)
+				{
+					lastScored = snap.child('lastScored').val();
+					displayWin = snap.child('displayWin').val();
+					menuUp = snap.child('menuUp').val();
+					gamePaused = snap.child('gamePaused').val();
+					justReset = snap.child('justReset').val();
+					hostPoints = snap.child('hostPoints').val();
+					clientPoints = snap.child('clientPoints').val();
+				});
 			}
 		}
 		// Render everything to the screen, this can happen every cycle
